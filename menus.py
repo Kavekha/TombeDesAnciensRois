@@ -30,31 +30,39 @@ def menu(con, header, options, width, screen_width, screen_height):
     libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
 
-def inventory_menu(con, header, inventory, inventory_width, screen_width, screen_height):
+def inventory_menu(con, header, player, inventory, inventory_width, screen_width, screen_height):
     if len(inventory.items) == 0:
         options = ['inventory is empty.']
     else:
-        options = [item.name for item in inventory.items]
+        options = []
+
+        for item in player.inventory.items:
+            if player.equipment.main_hand == item:
+                options.append('{} (on main hand.)'.format(item.name))
+            elif player.equipment.off_hand == item:
+                options.append('{} (on off hand.)'.format(item.name))
+            else:
+                options.append(item.name)
 
     menu(con, header, options, inventory_width, screen_width, screen_height)
 
 
-def main_menu(con, background_image, screen_width, screen_height):
+def main_menu(con, background_image, screen_width, screen_height, version):
     libtcod.image_blit_2x(background_image, 0, 0, 0)
 
     libtcod.console_set_default_foreground(0, libtcod.light_yellow)
     libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 2) - 4, libtcod.BKGND_NONE, libtcod.CENTER,
                              'TOMBS OF THE ANCIENT KINGS')
     libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 2), libtcod.BKGND_NONE,
-                             libtcod.CENTER, ' v0.2')
+                             libtcod.CENTER, version)
 
     menu(con, ' ', ['Play a new game', 'Continue last game', 'Quit'], 24, screen_width, screen_height)
 
 
 def level_up_menu(con, header, player, menu_width, screen_width, screen_height):
-    options = ['Constitution (+20 hp), from {}'.format(player.fighter.max_hp),
-               'Strenght (+1 power, from {}'.format(player.fighter.power),
-               'Agility (+1 defense, from {}'.format(player.fighter.defense)]
+    options = ['Constitution (+20 hp, from {})'.format(player.fighter.base_max_hp),
+               'Strenght (+1 power, from {})'.format(player.fighter.base_power),
+               'Agility (+1 defense, from {})'.format(player.fighter.base_defense)]
 
     menu(con, header, options, menu_width, screen_width, screen_height)
 
@@ -74,17 +82,15 @@ def character_screen(player, character_screen_width, character_screen_height, sc
                                   libtcod.LEFT, 'Experience to level : {}'.format(
             player.level.experience_to_next_level))
     libtcod.console_print_rect_ex(window, 0, 6, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Maximum HP: {}'.format(player.fighter.max_hp))
+                                  libtcod.LEFT, 'Maximum HP: {}'.format(player.fighter.base_max_hp))
     libtcod.console_print_rect_ex(window, 0, 7, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Attack : {}'.format(player.fighter.power))
+                                  libtcod.LEFT, 'Attack : {}'.format(player.fighter.base_power))
     libtcod.console_print_rect_ex(window, 0, 8, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Defense : {}'.format(player.fighter.defense))
+                                  libtcod.LEFT, 'Defense : {}'.format(player.fighter.base_defense))
 
     x = screen_width // 2 - character_screen_width // 2
     y = screen_height // 2 - character_screen_height // 2
     libtcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)
-
-
 
 
 def message_box(con, header, width, screen_width, screen_height):

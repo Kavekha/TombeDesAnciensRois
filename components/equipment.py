@@ -47,7 +47,7 @@ class Equipment:
 
         slot = equippable_entity.equippable.slot
 
-        if slot.equipmentSlots.MAIN_HAND:
+        if slot == EquipmentSlots.MAIN_HAND:
             if self.main_hand == equippable_entity:
                 self.main_hand = None
                 results.append({'dequipped': equippable_entity})

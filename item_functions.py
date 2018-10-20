@@ -24,6 +24,7 @@ def cast_lightning(*args, **kwargs):
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')
     maximum_range = kwargs.get('maximum_range')
+    game_map = kwargs.get('game_map')  # v14
 
     results = []
 
@@ -41,7 +42,7 @@ def cast_lightning(*args, **kwargs):
     if target:
         results.append({'consumed': True, 'target': target, 'message': Message(
             'A lightning bolt strikes the {} with a loud thunder! The damage is {}.'.format(target.name, damage))})
-        results.extend(target.fighter.take_damage(damage))
+        results.extend(target.fighter.take_damage(damage, caster, game_map))
     else:
         results.append({'consumed': False, 'target': None, 'message': Message('No enemy is close enough to strike.',
                                                                               libtcod.red)})
@@ -49,12 +50,14 @@ def cast_lightning(*args, **kwargs):
 
 
 def cast_fireball(*args, **kwargs):
+    caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')
     radius = kwargs.get('radius')
     target_x = kwargs.get('target_x')
     target_y = kwargs.get('target_y')
+    game_map = kwargs.get('game_map')
 
     results = []
 
@@ -67,12 +70,13 @@ def cast_fireball(*args, **kwargs):
     for entity in entities:
         if entity.distance(target_x, target_y) <= radius and entity.fighter:
             results.append({'message': Message('The {} getsburned for {} hit points.'.format(entity.name, damage), libtcod.orange)})
-            results.extend(entity.fighter.take_damage(damage))
+            results.extend(entity.fighter.take_damage(damage, caster, game_map))
 
     return results
 
 
 def cast_confuse(*args, **kwargs):
+    caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     target_x = kwargs.get('target_x')

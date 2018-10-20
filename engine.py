@@ -9,8 +9,7 @@ from imput_handlers import handle_keys, handle_mouse, handle_main_menu
 from loader_functions.initialize_new_game import get_constants, get_game_variables
 from loader_functions.data_loaders import save_game, load_game
 from render_functions import clear_all, render_all
-from menus import  main_menu, message_box
-
+from menus import main_menu, message_box
 
 
 def main():
@@ -19,9 +18,14 @@ def main():
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(constants['screen_width'], constants['screen_height'], constants['window_title'], False)
 
+    main_screen(constants)
+
+
+def main_screen(constants):
     con = libtcod.console_new(constants['screen_width'], constants['screen_height'])
     panel = libtcod.console_new(constants['screen_width'], constants['panel_height'])
 
+    print('DEBUG : MAIN SCREEN')
     player = None
     entities = []
     game_map = None
@@ -40,41 +44,41 @@ def main():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
 
         if show_main_menu:
-            main_menu(con, main_menu_background_image, constants['screen_width'], constants['screen_height'])
+            main_menu(con, main_menu_background_image, constants['screen_width'], constants['screen_height'],
+                      constants['version'])
 
-        if show_load_error_message:
-            message_box(con, 'No save game to load', 50, constants['screen_width'], constants['screen_height'])
+            if show_load_error_message:
+                message_box(con, 'No save game to load', 50, constants['screen_width'], constants['screen_height'])
 
-        libtcod.console_flush()
+            libtcod.console_flush()
 
-        action = handle_main_menu(key)
+            action = handle_main_menu(key)
 
-        new_game = action.get('new_game')
-        load_saved_game = action.get('load_game')
-        exit_game = action.get('exit')
+            new_game = action.get('new_game')
+            load_saved_game = action.get('load_game')
+            exit_game = action.get('exit')
 
-        if show_load_error_message and (new_game or load_saved_game or exit_game):
-            show_load_error_message = False
+            if show_load_error_message and (new_game or load_saved_game or exit_game):
+                show_load_error_message = False
 
-        elif new_game:
-            player, entities, game_map, message_log, game_state = get_game_variables(constants)
-            game_state = GameStates.PLAYERS_TURN
-            show_main_menu = False
+            elif new_game:
+                player, entities, game_map, message_log, game_state = get_game_variables(constants)
+                game_state = GameStates.PLAYERS_TURN
+                show_main_menu = False
+
+            elif load_saved_game:
+                try:
+                    player, entities, game_map, message_log, game_state = load_game()
+                    show_main_menu = False
+                except FileNotFoundError:
+                    show_load_error_message = True
+            elif exit_game:
+                break
+        else:
+            libtcod.console_clear(con)
             play_game(player, entities, game_map, message_log, game_state, con, panel, constants)
 
-        elif load_saved_game:
-            try:
-                player, entities, game_map, message_log, game_state = load_game()
-                show_main_menu = False
-                play_game(player, entities, game_map, message_log, game_state, con, panel, constants)
-            except FileNotFoundError:
-                show_load_error_message = True
-        elif exit_game:
-            print('EXIT')
-            break
-    else:
-        libtcod.console_clear(con)
-        show_main_menu = True
+            show_main_menu = True
 
 
 def play_game(player, entities, game_map, message_log, game_state, con, panel, constants):
@@ -136,7 +140,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 target = get_blocking_entities_at_location(entities, destination_x, destination_y)
 
                 if target:
-                    attack_results = player.fighter.attack(target)
+                    attack_results = player.fighter.attack(target, game_map)    # game_map ajouté v14.
                     player_turn_results.extend(attack_results)
                 else:
                     player.move(dx, dy)
@@ -188,12 +192,12 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
         if level_up:
             if level_up == 'hp':
-                player.fighter.max_hp += 20
+                player.fighter.base_max_hp += 20
                 player.fighter.hp += 20
             if level_up == 'str':
-                player.fighter.power += 1
+                player.fighter.base_power += 1
             if level_up == 'def':
-                player.fighter.defense += 1
+                player.fighter.base_defense += 1
 
             game_state = previous_game_state
 
@@ -218,7 +222,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player_turn_results.append({'targeting_cancelled': True})
             else:
                 save_game(player, entities, game_map, message_log, game_state)
-
+                # main_screen(constants)
                 return True
 
         if fullscreen:
@@ -230,6 +234,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             item_added = player_turn_result.get('item_added')
             item_consumed = player_turn_result.get('consumed')
             item_dropped = player_turn_result.get('item_dropped')
+            equip = player_turn_result.get('equip')
             targeting = player_turn_result.get('targeting')
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
             xp = player_turn_result.get('xp')
@@ -269,6 +274,21 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
             if item_dropped:
                 entities.append(item_dropped)
+                game_state = GameStates.ENEMY_TURN
+
+            if equip:
+                equip_results = player.equipment.toggle_equip(equip)
+
+                for equip_result in equip_results:
+                    equipped = equip_result.get('equipped')
+                    dequipped = equip_result.get('dequipped')
+
+                    if equipped:
+                        message_log.add_message(Message('You equipped the {}.'.format(equipped.name)))
+
+                    if dequipped:
+                        message_log.add_message(Message('You dequipped the {}.'.format(dequipped.name)))
+
                 game_state = GameStates.ENEMY_TURN
 
             if targeting:

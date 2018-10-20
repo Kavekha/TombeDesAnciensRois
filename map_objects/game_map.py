@@ -4,6 +4,8 @@ from random import randint
 from render_functions import RenderOrder
 
 from components.ai import BasicMonster
+from components.equipment import EquipmentSlots
+from components.equippable import Equippable
 from components.fighter import Fighter
 from components.item import Item
 from components.stairs import Stairs
@@ -20,7 +22,7 @@ from map_objects.rectangle import Rect
 
 
 class GameMap:
-    def __init__(self, width, height, dungeon_level=1):
+    def __init__(self, width, height, constants['version'], dungeon_level=1):
         self.width = width
         self.height = height
         self.tiles = self.initialize_tiles()
@@ -107,8 +109,8 @@ class GameMap:
 
     def place_entities(self, room, entities):
         # random nb of monsters
-        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 2], [4, 3], [5, 4]], self.dungeon_level)
-        max_items_per_room = from_dungeon_level([[1, 1], [2, 3], [3, 6]], self.dungeon_level)
+        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 2], [4, 3], [5, 4], [6, 6], [7, 10]], self.dungeon_level)
+        max_items_per_room = from_dungeon_level([[1, 1], [2, 3], [3, 6],[4, 10]], self.dungeon_level)
         print('DEBUG : max monsters : {}'.format(max_monsters_per_room))
         print('DEBUG : max items : {}'.format(max_items_per_room))
 
@@ -116,16 +118,18 @@ class GameMap:
         number_of_items = randint(0, max_items_per_room)
 
         monster_chances = {
-            'orc': 80,
+            'orc': from_dungeon_level([[80, 1], [70, 3], [60, 5], [50, 7], [30, 10]], self.dungeon_level),
             'troll': from_dungeon_level([[15, 1], [30, 3],[60, 5]], self.dungeon_level),
-            'ogre': from_dungeon_level([[0, 1], [1, 3], [2, 6], [3, 10]], self.dungeon_level)
+            'ogre': from_dungeon_level([[0, 1], [1, 3], [2, 5], [5, 6], [10, 7], [15, 8], [20, 9], [25, 10]], self.dungeon_level)
         }
 
         item_chances = {
             'healing_potion': 35,
             'lightning_scroll': from_dungeon_level([[10, 1], [25,3]], self.dungeon_level),
             'fireball_scroll': from_dungeon_level([[5, 1], [10, 3], [25, 6]], self.dungeon_level),
-            'confusion_scroll': from_dungeon_level([[10, 2], [15, 5]], self.dungeon_level)
+            'confusion_scroll': from_dungeon_level([[10, 2], [15, 5]], self.dungeon_level),
+            'sword': from_dungeon_level([[5, 4]], self.dungeon_level),
+            'shield': from_dungeon_level([[15, 8]], self.dungeon_level)
         }
 
         for i in range(number_of_monsters):
@@ -193,6 +197,12 @@ class GameMap:
                         'Left-click an enemy to confuse it, or right-click to cancel.', libtcod.light_cyan))
                     item = Entity(x, y, '#', libtcod.light_pink, 'Confusion scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)
+                elif item_choice == 'sword':
+                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=3)
+                    item = Entity(x, y, '/', libtcod.sky, 'sword', equippable=equippable_component)
+                elif item_choice == 'shield':
+                    equippable_component = Equippable(EquipmentSlots.OFF_HAND, defense_bonus=1)
+                    item = Entity(x, y, '[', libtcod.darker_orange, 'Shield', equippable=equippable_component)
                 else:
                     item = Entity(x, y, 'x', libtcod.light_gray, 'item choice out of range',
                                   render_order=RenderOrder.ITEM)

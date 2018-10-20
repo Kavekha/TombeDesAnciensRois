@@ -17,7 +17,7 @@ class BasicMonster:
                 monster.move_astar(target, entities, game_map)
 
             elif target.fighter.hp > 0:
-                attack_results = monster.fighter.attack(target)
+                attack_results = monster.fighter.attack(target, game_map)
                 results.extend(attack_results)
 
         return results

@@ -82,7 +82,7 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
     libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Dungeon level : {}'.format(game_map.dungeon_level))
 
-    render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp, libtcod.light_red,
+    render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.base_max_hp, libtcod.light_red,
                libtcod.darker_red)
 
     libtcod.console_set_default_foreground(panel, libtcod.light_gray)
@@ -96,8 +96,7 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
         else:
             inventory_title = 'Press the key next to an item to drop it, or Esc to cancel. \n'
 
-        inventory_menu(con, inventory_title, player.inventory, 50,
-                       screen_width, screen_height)
+        inventory_menu(con, inventory_title, player, player.inventory, 50, screen_width, screen_height)
 
     elif game_state == GameStates.LEVEL_UP:
         level_up_menu(con, 'Level up! Choose a stat to raise:', player, 40, screen_width, screen_height)
