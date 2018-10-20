@@ -9,6 +9,9 @@ from components.equippable import Equippable
 from components.fighter import Fighter
 from components.item import Item
 from components.stairs import Stairs
+from components.death import Death
+
+from death_functions import kill_monster, kill_final_boss
 
 from entity import Entity
 
@@ -22,10 +25,11 @@ from map_objects.rectangle import Rect
 
 
 class GameMap:
-    def __init__(self, width, height, constants['version'], dungeon_level=1):
+    def __init__(self, width, height, version, dungeon_level=1):
         self.width = width
         self.height = height
         self.tiles = self.initialize_tiles()
+        self.version = version
 
         self.dungeon_level = dungeon_level
 
@@ -86,10 +90,22 @@ class GameMap:
                 rooms.append(new_room)
                 num_rooms += 1
 
-        stairs_component = Stairs(self.dungeon_level + 1)
-        down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', libtcod.white, 'Stairs',
-                             render_order=RenderOrder.STAIRS, stairs=stairs_component)
-        entities.append(down_stairs)
+        # condition add in v14.
+        if self.dungeon_level < 10:
+            stairs_component = Stairs(self.dungeon_level + 1)
+            down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', libtcod.white, 'Stairs',
+                                 render_order=RenderOrder.STAIRS, stairs=stairs_component)
+            entities.append(down_stairs)
+        else:
+            fighter_component = Fighter(hp=120, defense=8, power=32, xp=0)
+            ai_component = BasicMonster()
+            death_component = Death(kill_final_boss)  # v14
+
+            monster = Entity(center_of_last_room_x, center_of_last_room_y, 'K', libtcod.darker_amber, 'Ancient King', blocks=True,
+                             render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
+                             death=death_component)
+            entities.append(monster)
+
 
     def create_room(self, room):
         for x in range(room.x1 + 1, room.x2):
@@ -120,14 +136,15 @@ class GameMap:
         monster_chances = {
             'orc': from_dungeon_level([[80, 1], [70, 3], [60, 5], [50, 7], [30, 10]], self.dungeon_level),
             'troll': from_dungeon_level([[15, 1], [30, 3],[60, 5]], self.dungeon_level),
-            'ogre': from_dungeon_level([[0, 1], [1, 3], [2, 5], [5, 6], [10, 7], [15, 8], [20, 9], [25, 10]], self.dungeon_level)
+            'ogre': from_dungeon_level([[0, 1], [1, 3], [2, 5], [5, 6], [10, 7], [15, 8], [20, 9], [25, 10]],
+                                       self.dungeon_level)
         }
 
         item_chances = {
             'healing_potion': 35,
-            'lightning_scroll': from_dungeon_level([[10, 1], [25,3]], self.dungeon_level),
+            'confusion_scroll': from_dungeon_level([[10, 1], [25,3]], self.dungeon_level),
             'fireball_scroll': from_dungeon_level([[5, 1], [10, 3], [25, 6]], self.dungeon_level),
-            'confusion_scroll': from_dungeon_level([[10, 2], [15, 5]], self.dungeon_level),
+            'lightning_scroll': from_dungeon_level([[10, 2], [15, 5]], self.dungeon_level),
             'sword': from_dungeon_level([[5, 4]], self.dungeon_level),
             'shield': from_dungeon_level([[15, 8]], self.dungeon_level)
         }
@@ -147,25 +164,31 @@ class GameMap:
                     print('Ogre was chosen')
                     fighter_component = Fighter(hp=20, defense=0, power=4, xp=25)
                     ai_component = BasicMonster()
+                    death_component = Death(kill_monster)   #v14
 
                     monster = Entity(x, y, 'o', libtcod.desaturated_green, 'Orc', blocks=True,
-                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
+                                     death=death_component)
 
                 if monster_choice == 'troll':
                     print('Troll was chosen')
                     fighter_component = Fighter(hp=30, defense=2, power=8, xp=100)
                     ai_component = BasicMonster()
+                    death_component = Death(kill_monster)   #v14
 
                     monster = Entity(x, y, 'T', libtcod.darker_green, 'Troll', blocks=True,
-                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
+                                     death=death_component)
 
                 if monster_choice == 'ogre':
                     print('Ogre was chosen')
                     fighter_component = Fighter(hp=60, defense=4, power=16, xp=400)
                     ai_component = BasicMonster()
+                    death_component = Death(kill_monster)   #v14
 
                     monster = Entity(x, y, 'O', libtcod.darker_crimson, 'Ogre', blocks=True,
-                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
+                                     death=death_component)
                 else:
                     print('WARNING : "Else" was used, instead of {} in monster choice'.format(monster_choice))
 
@@ -185,14 +208,14 @@ class GameMap:
                 elif item_choice == 'fireball_scroll':
                     item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
                         'Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_cyan),
-                                          damage=25, radius=3)
+                                          damage=25, radius=3, game_map=self)
                     item = Entity(x, y, '#', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)
-                elif item_choice == 'confusion_scroll':
-                    item_component = Item(use_function=cast_lightning, damage=40, maximum_range=5)
+                elif item_choice == 'lightning_scroll':
+                    item_component = Item(use_function=cast_lightning, damage=40, maximum_range=5, game_map=self)   # v14a gamemap
                     item = Entity(x, y, '#', libtcod.yellow, 'Lightning scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)
-                elif item_choice == 'lightning_scroll':
+                elif item_choice == 'confusion_scroll':
                     item_component = Item(use_function=cast_confuse, targeting=True, targeting_message=Message(
                         'Left-click an enemy to confuse it, or right-click to cancel.', libtcod.light_cyan))
                     item = Entity(x, y, '#', libtcod.light_pink, 'Confusion scroll', render_order=RenderOrder.ITEM,
