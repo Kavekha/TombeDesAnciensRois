@@ -6,6 +6,9 @@ from components.level import Level
 from components.equipment import Equipment
 from components.equippable import Equippable
 from equipement_slots import EquipmentSlots
+from components.death import Death
+
+from death_functions import kill_player
 
 from entity import Entity
 from game_messages import MessageLog
@@ -18,7 +21,7 @@ from render_functions import RenderOrder
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.14'
+    version = '0.14b'
     screen_width = 80
     screen_height = 50
 
@@ -88,9 +91,10 @@ def get_game_variables(constants):
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()
+    death_component = Death(kill_player)
     player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
                     fighter=fighter_component, inventory=inventory_component, level=level_component,
-                    equipment=equipment_component)
+                    equipment=equipment_component, death=death_component)
 
     entities = [player]
 
@@ -99,7 +103,7 @@ def get_game_variables(constants):
     player.inventory.add_item(dagger)
     player.equipment.toggle_equip(dagger)
 
-    game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'])   # v14 version ajoutée.
+    game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'])
     game_map.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],
                       constants['map_width'], constants['map_height'], player, entities)
 

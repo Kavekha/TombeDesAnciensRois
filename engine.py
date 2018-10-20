@@ -1,6 +1,8 @@
 import libtcodpy as libtcod
 
 from death_functions import kill_monster, kill_player
+from components.death import Death
+
 from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message
@@ -8,6 +10,7 @@ from game_states import GameStates
 from imput_handlers import handle_keys, handle_mouse, handle_main_menu
 from loader_functions.initialize_new_game import get_constants, get_game_variables
 from loader_functions.data_loaders import save_game, load_game
+from loader_functions.scores_loader import create_score_bill
 from render_functions import clear_all, render_all
 from menus import main_menu, message_box
 
@@ -140,7 +143,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 target = get_blocking_entities_at_location(entities, destination_x, destination_y)
 
                 if target:
-                    attack_results = player.fighter.attack(target, game_map)    # game_map ajouté v14.
+                    attack_results = player.fighter.attack(target, game_map)
                     player_turn_results.extend(attack_results)
                 else:
                     player.move(dx, dy)
@@ -181,10 +184,14 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if take_stairs and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
                 if entity.stairs and entity.x == player.x and entity.y == player.y:
-                    entities = game_map.next_floor(player, message_log, constants)
-                    fov_map = initialize_fov(game_map)
-                    fov_recompute = True
-                    libtcod.console_clear(con)
+                    if game_map.dungeon_level >= 10:    # v14
+                        create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  #v14
+                        exit = True #v14, to test
+                    else:   #v14
+                        entities = game_map.next_floor(player, message_log, constants)
+                        fov_map = initialize_fov(game_map)
+                        fov_recompute = True
+                        libtcod.console_clear(con)
 
                     break
             else:
@@ -258,10 +265,18 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                     game_state = GameStates.LEVEL_UP
 
             if dead_entity:
+
+                # v14.
+                if dead_entity.death.death_function:
+                    message, game_state = dead_entity.death.death_function(dead_entity, game_state)
+
+                '''
+                # death methode before v14.
                 if dead_entity == player:
                     message, game_state = kill_player(dead_entity)
                 else:
                     message = kill_monster(dead_entity)
+                '''
 
                 message_log.add_message(message)
 
@@ -317,9 +332,9 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
                         if dead_entity:
                             if dead_entity == player:
-                                message, game_state = kill_player(dead_entity)
+                                message, game_state = kill_player(dead_entity, game_state)
                             else:
-                                message = kill_monster(dead_entity)
+                                message = kill_monster(dead_entity, game_state)
 
                             message_log.add_message(message)
 
@@ -331,6 +346,12 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
             else:
                 game_state = GameStates.PLAYERS_TURN
+
+        # v14 victory condition.
+        if game_state == GameStates.VICTORY:
+            message_box(con, 'The Ancient King has been vanquished! Congratulations on your victory!!', 50,
+                        constants['screen_width'], constants['screen_height'])
+            return True
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 
 from game_messages import Message
-from loader_functions.score_loaders import create_score_bill
+from loader_functions.scores_loader import create_score_bill    #v14a
 
 
 class Fighter:
@@ -39,16 +39,14 @@ class Fighter:
 
         return self.base_defense + bonus
 
-    def take_damage(self, amount, attacker, game_map): # v14 attacker, game_map ajoutés.
+    def take_damage(self, amount, attacker, game_map):
         results = []
 
         self.hp -= amount
 
         if self.hp <= 0:
             results.append({'dead': self.owner, 'xp': self.xp})
-            # version 14. scorebill.
             if not self.owner.ai:
-                print('DEBUG: Je suis un player')
                 create_score_bill(self.owner, game_map.dungeon_level, attacker, game_map.version)
 
         return results
@@ -68,9 +66,10 @@ class Fighter:
             results.append({'message': Message('{} attacks {} for {} hit points.'.format(self.owner.name.capitalize(),
                                                                                          target.name, str(damage)),
                                                libtcod.white)})
-            results.extend(target.fighter.take_damage(damage, self.owner, game_map))  # v14 self.owner, game_map ajoutés
+            results.extend(target.fighter.take_damage(damage, self, game_map))
         else:
             results.append({'message': Message('{} attacks {} but does no damage.'.format(self.owner.name.capitalize(),
                                                                                           target.name), libtcod.white)})
 
         return results
+

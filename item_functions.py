@@ -24,7 +24,7 @@ def cast_lightning(*args, **kwargs):
     fov_map = kwargs.get('fov_map')
     damage = kwargs.get('damage')
     maximum_range = kwargs.get('maximum_range')
-    game_map = kwargs.get('game_map')  # v14
+    game_map = kwargs.get('game_map')
 
     results = []
 
@@ -76,7 +76,6 @@ def cast_fireball(*args, **kwargs):
 
 
 def cast_confuse(*args, **kwargs):
-    caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
     target_x = kwargs.get('target_x')
