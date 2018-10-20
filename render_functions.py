@@ -3,13 +3,15 @@ import libtcodpy as libtcod
 from enum import Enum
 
 from game_states import GameStates
-from menus import inventory_menu
+from menus import inventory_menu, level_up_menu, character_screen
 
 
 class RenderOrder(Enum):
+    STAIRS = 3
     CORPSE = 1
     ITEM = 2
-    ACTOR = 3
+    ACTOR = 4
+
 
 
 def get_names_under_mouse(mouse, entities, fov_map):
@@ -64,7 +66,7 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
 
     # draw entity
     for entity in entities_in_render_order:
-        draw_entity(con, entity, fov_map)
+        draw_entity(con, entity, fov_map, game_map)
 
     libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
 
@@ -77,6 +79,8 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
         libtcod.console_set_default_foreground(panel, message.color)
         libtcod.console_print_ex(panel, message_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text)
         y += 1
+    libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Dungeon level : {}'.format(game_map.dungeon_level))
 
     render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp, libtcod.light_red,
                libtcod.darker_red)
@@ -95,14 +99,19 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
         inventory_menu(con, inventory_title, player.inventory, 50,
                        screen_width, screen_height)
 
+    elif game_state == GameStates.LEVEL_UP:
+        level_up_menu(con, 'Level up! Choose a stat to raise:', player, 40, screen_width, screen_height)
+
+    elif game_state == GameStates.CHARACTER_SCREEN:
+        character_screen(player, 30, 10, screen_width, screen_height)
 
 def clear_all(con, entities):
     for entity in entities:
         clear_entity(con, entity)
 
 
-def draw_entity(con, entity, fov_map):
-    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
+def draw_entity(con, entity, fov_map, game_map):
+    if libtcod.map_is_in_fov(fov_map, entity.x, entity.y) or (entity.stairs and game_map.tiles[entity.x][entity.y].explored):
         libtcod.console_set_default_foreground(con, entity.color)
         libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
 
