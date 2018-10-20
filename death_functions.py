@@ -9,6 +9,7 @@ def kill_player(player):
     player.char = '%'
     player.color = libtcod.dark_red
 
+    # v14 : creation du score bill.
     return Message('You died', libtcod.red), GameStates.PLAYER_DEAD
 
 
