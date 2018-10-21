@@ -1,16 +1,7 @@
 import libtcodpy as libtcod
-from enum import Enum
 
 from game_messages import Message
-
-
-class TargetType(Enum):
-    SELF = 0
-    ENEMY = 1
-    ALLIED = 2
-    RADIUS = 3
-    TILE = 4
-    CLOSEST_ENTITIES = 5
+from systems.targeting import TargetType
 
 
 class Spellbook:
@@ -44,9 +35,10 @@ class Spellbook:
 
             results.extend(spell_cast_results)
 
-        # targeting on the player TO TEST
+        # tested
         elif spell_component.targeting == TargetType.SELF:
-            results.append({'message': Message('{} target self.'.format(spell_entity.name), libtcod.yellow)})
+            print('DEBUG : Spell target self')
+            results.append({'spell_targeting': {'spell': spell_entity, 'target_mode': spell_component.targeting}})
 
         # tested, allied not implemented
         elif spell_component.targeting == TargetType.ALLIED:
@@ -56,9 +48,9 @@ class Spellbook:
         elif spell_component.targeting == TargetType.ENEMY:
             results.append({'spell_targeting': {'spell': spell_entity, 'target_mode': spell_component.targeting}})
 
-        # Not tested.
+        # in progress
         elif spell_component.targeting == TargetType.RADIUS:
-            results.append({'message': Message('{} target a Tile and all tiles around.'.format(spell_entity.name), libtcod.yellow)})
+            results.append({'spell_targeting': {'spell': spell_entity, 'target_mode': spell_component.targeting}})
 
         # To refacto.
         elif spell_component.targeting == TargetType.TILE:
@@ -69,6 +61,8 @@ class Spellbook:
             results.append({'spell_targeting': {'spell': spell_entity, 'target_mode': spell_component.targeting}})
             print('DEBUG : targeting closest entities')
 
+        elif spell_component.targeting == TargetType.TILE_OR_ENTITY:
+            results.append({'spell_targeting': {'spell': spell_entity, 'target_mode': spell_component.targeting}})
         else:
             results.append({'message': Message('Error : {} has no target mode.'.format(spell_entity.name), libtcod.yellow)})
 

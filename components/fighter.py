@@ -39,6 +39,8 @@ class Fighter:
         self.hp = self.base_max_hp
         self.mana = self.base_max_mana
 
+        self.paralyzed = None
+
     @property
     def max_mana(self):
         if self.owner and self.owner.equipment:
@@ -107,6 +109,11 @@ class Fighter:
     def take_damage(self, damage, attacker, game_map, damage_type=DamageType.UNKNOWN):
         results = []
 
+        # v16 crappy management of paralyzed, both at AI and there. Will crashed if paralyze on other than BasicAI.
+        if self.paralyzed:
+            self.paralyzed = 0
+            results.extend(self.owner.ai.out_of_paralyze())
+
         if damage_type == DamageType.PHYSICAL:
             damage -= self.defense
 
@@ -132,6 +139,7 @@ class Fighter:
                 print('INFO : Not confused ai, ai = ', self.owner.ai)
 
         if self.hp <= 0:
+            print('DEBUG : {} : I m dead!!!', self.owner.name)
             results.append({'dead': self.owner, 'xp': self.xp})
             if not self.owner.ai:
                 create_score_bill(self.owner, game_map.dungeon_level, attacker, game_map.name)
@@ -162,3 +170,12 @@ class Fighter:
 
         if self.hp > self.max_hp:
             self.hp = self.max_hp
+
+    # v16. really bad, for mass para spell. "take turn" and nb of turn decreased in AI.... Basic...shitty.
+    def get_paralyzed(self, caster, number_of_turns):
+        results = []
+
+        self.paralyzed = number_of_turns
+        results.append({'message': Message('{} has been paralyzed by {} !'.format(self.owner.name, caster.name), libtcod.light_blue)})
+
+        return results

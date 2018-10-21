@@ -24,7 +24,7 @@ from data.data_spells import generate_spell
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.16a'
+    version = '0.16b'
     screen_width = 80
     screen_height = 50
 
@@ -90,7 +90,7 @@ def get_constants():
 
 
 def get_game_variables(constants):
-    fighter_component = Fighter(hp=50, mana=10, str=2, dex=2, int=1, background='warrior')
+    fighter_component = Fighter(hp=50, mana=10, str=2, dex=2, int=1, background='mage')
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()
@@ -109,7 +109,7 @@ def get_game_variables(constants):
     potion = generate_item('healing_potion', 0, 0)
     player.inventory.add_item(potion)
 
-    for spell_to_create in ('magic_missile', 'arcanic_wall'):
+    for spell_to_create in ('magic_missile', 'arcanic_wall', 'evocation', 'mass_paralyze'):
         spell = generate_spell(spell_to_create, 0, 0)
         player.spellbook.add_spell(spell)
 

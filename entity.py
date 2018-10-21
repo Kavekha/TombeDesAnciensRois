@@ -10,7 +10,7 @@ class Entity:
     # generic object to represent players, enemies, items, etc
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None,
                  item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None, death=None,
-                 spellbook=None, spell=None):
+                 spellbook=None, spell=None, ally=False):
         # v14 death added
         # v16 spellbook added
         self.x = x
@@ -31,6 +31,7 @@ class Entity:
         self.death = death
         self.spellbook = spellbook
         self.spell = spell
+        self.ally = ally
 
         if self.fighter:
             self.fighter.owner = self
@@ -82,8 +83,12 @@ class Entity:
         dx = int(round(dx / distance))
         dy = int(round(dy / distance))
 
-        if not (game_map.is_blocked(self.x + dx, self.y + dy) or
-                get_blocking_entities_at_location(entities, self.x + dx, self.y + dy)):
+        # v16 : if false, I can move.
+        if self.blocks:
+            if not (game_map.is_blocked(self.x + dx, self.y + dy) or
+                    get_blocking_entities_at_location(entities, self.x + dx, self.y + dy)):
+                self.move(dx, dy)
+        else:
             self.move(dx, dy)
 
     def distance(self, x, y):

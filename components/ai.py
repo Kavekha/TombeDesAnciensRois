@@ -9,25 +9,72 @@ from game_messages import Message
 class BrainStates(Enum):
     NORMAL = 0
     CONFUSED = 1
+    PARALYZED = 2
 
 
-class BasicMonster:
-    def __init__(self):
-        self.state = BrainStates.NORMAL
+class MovingItem:
+    def __init__(self, caster, power, damage_type, target_x, target_y, entities):
+        self.caster = caster
+        self.power = power
+        self.damage_type = damage_type
+        self.target_x = target_x
+        self.target_y = target_y
+        self.duration = power
+        self.entities = entities
 
-    def take_turn(self, target, fov_map, game_map, entities):
+    def explode_on_contact(self, entities, game_map):
+        monster = self.owner
+
+        results = []
+        # Am I on someone toe?
+        print('DEBUG : Im at : ', monster.x, monster.y)
+        for entity in entities:
+            if entity.x == monster.x and entity.y == monster.y and entity != self.caster and entity != monster and entity.fighter:
+                print('DEBUG : entity in same place')
+                damage = self.power * self.caster.fighter.int
+                self.power = int(self.power / 2)
+                print('DEBUG : entity has life : {} and is {} '.format(entity.fighter.hp, entity.name))
+                results.extend(entity.fighter.take_damage(damage, self.caster, game_map, self.damage_type))
+                results.append({'message': Message('{} size is reduce by half after its explosion.'.format(
+                    self.owner.name), libtcod.blue)})
+                break
+        else:
+            print('DEBUG : no entity ever on the same spot')
+
+        return results
+
+    def take_turn(self, player, fov_map, game_map, entities):
+
         results = []
 
         monster = self.owner
+        print('MY TURN, I m at ', monster.x, monster.y)
+
+        results.extend(self.explode_on_contact(entities, game_map))
 
         if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
 
-            if monster.distance_to(target) >= 2:
-                monster.move_astar(target, entities, game_map)
+            if monster.distance(self.target_x, self.target_y) > 0:
+                monster.move_towards(self.target_x, self.target_y, game_map, entities)
+                self.duration -= 1
+            else:
+                results.extend(self.dispeled())
 
-            elif target.fighter.hp > 0:
-                attack_results = monster.fighter.attack(target, game_map)
-                results.extend(attack_results)
+        else:
+            self.duration -= 2
+
+        if self.duration <= 0:
+            results.extend(self.dispeled())
+            pass
+
+
+        return results
+
+    def dispeled(self):
+        results = []
+
+        results.append({'message': Message('{} exploded!'.format(self.owner.name), libtcod.blue)})
+        self.entities.remove(self.owner)
 
         return results
 
@@ -64,8 +111,47 @@ class Obstacle:
         self.entities.remove(self.owner)
 
 
-class ConfusedMonster:
-    def __init__(self, previous_ai, number_of_turns=10):
+class BasicMonster:
+    def __init__(self):
+        self.state = BrainStates.NORMAL
+
+    def take_turn(self, target, fov_map, game_map, entities):
+        results = []
+
+        monster = self.owner
+
+        # v16 ultra crade gestion de paralyzed, ici et dans Fighter
+        if not monster.fighter.paralyzed:
+            if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
+
+                if monster.distance_to(target) >= 2:
+                    monster.move_astar(target, entities, game_map)
+
+                elif target.fighter.hp > 0:
+                    attack_results = monster.fighter.attack(target, game_map)
+                    results.extend(attack_results)
+        else:
+            if monster.fighter.paralyzed > 0:
+                results.append({'message': Message('{} is still paralyzed.'.format(monster.name), libtcod.light_blue)})
+                monster.fighter.paralyzed -= 1
+            else:
+                self.out_of_paralyze()
+
+
+        return results
+
+    def out_of_paralyze(self):
+
+        results = []
+
+        results.append({'message': Message('{} starts moving!'.format(self.owner.name), libtcod.red)})
+        self.owner.fighter.paralyzed = None
+
+        return results
+
+
+class ModifiedMindMonster:
+    def __init__(self, previous_ai, number_of_turns=1):
         self.previous_ai = previous_ai
         self.number_of_turns = number_of_turns
         self.state = BrainStates.CONFUSED
@@ -95,11 +181,8 @@ class ConfusedMonster:
         chance_to_stay_confuse *= 200
         rand = randint(1, 100)
 
-        print('DEBUG : chance to stay confuse : {}, rand {}'.format(chance_to_stay_confuse, rand))
-
         if rand > chance_to_stay_confuse:
             self.number_of_turns -= 2
-            print('INFO : confuse time reduces by damage.')
             if self.number_of_turns <= 0:
                 results.extend(self.out_of_confusion())
 
@@ -109,7 +192,7 @@ class ConfusedMonster:
         results = []
 
         self.owner.ai = self.previous_ai
-        results.append({'message': Message('The {} is no longer confused!'.format(self.owner.name), libtcod.red)})
+        results.extend({'message': Message('The {} is no longer confused!'.format(self.owner.name), libtcod.red)})
 
         return results
 
