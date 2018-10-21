@@ -5,6 +5,7 @@ from components.inventory import Inventory
 from components.level import Level
 from components.equipment import Equipment
 from components.death import Death
+from components.spellbook import Spellbook
 
 from death_functions import kill_player
 
@@ -18,11 +19,12 @@ from render_functions import RenderOrder
 
 from data.data_weapons import generate_weapon
 from data.data_items import generate_item
+from data.data_spells import generate_spell
 
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.15e'
+    version = '0.16c'
     screen_width = 80
     screen_height = 50
 
@@ -88,14 +90,15 @@ def get_constants():
 
 
 def get_game_variables(constants):
-    fighter_component = Fighter(hp=100, str=3, dex=3)
+    fighter_component = Fighter(hp=50, mana=10, str=2, dex=2, int=1, background='mage')
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()
     death_component = Death(kill_player)
+    spellbook_component = Spellbook(26)
     player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
                     fighter=fighter_component, inventory=inventory_component, level=level_component,
-                    equipment=equipment_component, death=death_component)
+                    equipment=equipment_component, death=death_component, spellbook=spellbook_component)
 
     entities = [player]
 
@@ -103,10 +106,15 @@ def get_game_variables(constants):
     player.inventory.add_item(dagger)
     player.equipment.toggle_equip(dagger)
 
-    potion = generate_item('healing_potion', 0, 0)
-    player.inventory.add_item(potion)
+    for item_to_create in ('healing_potion', 'mana_potion'):
+        item = generate_item(item_to_create, 0, 0)
+        player.inventory.add_item(item)
 
-    game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'])
+    for spell_to_create in ('magic_missile', 'arcanic_wall', 'evocation', 'mass_paralyze'):
+        spell = generate_spell(spell_to_create, 0, 0)
+        player.spellbook.add_spell(spell)
+
+    game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'], 'Dungeon')
     game_map.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],
                       constants['map_width'], constants['map_height'], player, entities)
 

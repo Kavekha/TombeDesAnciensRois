@@ -9,8 +9,10 @@ import math
 class Entity:
     # generic object to represent players, enemies, items, etc
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None,
-                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None, death=None):
+                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None, death=None,
+                 spellbook=None, spell=None, ally=False):
         # v14 death added
+        # v16 spellbook added
         self.x = x
         self.y = y
         self.char = char
@@ -27,6 +29,9 @@ class Entity:
         self.equipment = equipment
         self.equippable = equippable
         self.death = death
+        self.spellbook = spellbook
+        self.spell = spell
+        self.ally = ally
 
         if self.fighter:
             self.fighter.owner = self
@@ -60,6 +65,12 @@ class Entity:
         if self.death:
             self.death.owner = self
 
+        if self.spellbook:
+            self.spellbook.owner = self
+
+        if self.spell:
+            self.spell.owner = self
+
     def move(self, dx, dy):
         self.x += dx
         self.y += dy
@@ -72,8 +83,12 @@ class Entity:
         dx = int(round(dx / distance))
         dy = int(round(dy / distance))
 
-        if not (game_map.is_blocked(self.x + dx, self.y + dy) or
-                get_blocking_entities_at_location(entities, self.x + dx, self.y + dy)):
+        # v16 : if false, I can move.
+        if self.blocks:
+            if not (game_map.is_blocked(self.x + dx, self.y + dy) or
+                    get_blocking_entities_at_location(entities, self.x + dx, self.y + dy)):
+                self.move(dx, dy)
+        else:
             self.move(dx, dy)
 
     def distance(self, x, y):
@@ -125,6 +140,7 @@ class Entity:
 
 def get_blocking_entities_at_location(entities, destination_x, destination_y):
     for entity in entities:
-        if entity.blocks and entity.x == destination_x and entity.y == destination_y:
+        # v16 entity.fighter to deal with obstacle like arcanic wall.
+        if entity.blocks and entity.x == destination_x and entity.y == destination_y and entity.fighter:
             return entity
     return None

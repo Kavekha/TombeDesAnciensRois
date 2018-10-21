@@ -8,10 +8,12 @@ def handle_keys(key, game_state):
         return handle_player_turn_keys(key)
     elif game_state == GameStates.PLAYER_DEAD:
         return handle_player_dead_keys(key)
-    elif game_state == GameStates.TARGETING:
+    elif game_state in (GameStates.TARGETING, GameStates.SPELL_TARGETING):
         return handle_targeting_keys(key)
     elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_inventory_keys(key)
+    elif game_state == GameStates.SHOW_SPELLBOOK:
+        return handle_spellbook_keys(key)
     elif game_state == GameStates.LEVEL_UP:
         return handle_level_up_menu(key)
     elif game_state == GameStates.CHARACTER_SCREEN:
@@ -76,20 +78,14 @@ def handle_player_turn_keys(key):
         return {'move': (-1, 0)}
     elif key.vk == libtcod.KEY_RIGHT or key_char == 'l':
         return {'move': (1, 0)}
-    elif key_char == 'y':
-        return {'move': (-1, -1)}
-    elif key_char == 'u':
-        return {'move': (1, -1)}
-    elif key_char == 'b':
-        return {'move': (-1, 1)}
-    elif key_char == 'n':
-        return {'move': (1, 1)}
 
     elif key_char == 'z':
         return {'wait': True}
     elif key_char == 'g':
         return {'pickup': True}
 
+    elif key_char == 'b':
+        return {'spellbook': True}
     elif key_char == 'i':
         return {'show_inventory': True}
 
@@ -131,6 +127,20 @@ def handle_inventory_keys(key):
 
     if index >= 0:
         return {'inventory_index': index}
+
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        return {'fullscreen': True}
+    elif key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
+
+    return {}
+
+
+def handle_spellbook_keys(key):
+    index = key.c - ord('a')
+
+    if index >= 0:
+        return {'spellbook_index': index}
 
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         return {'fullscreen': True}
