@@ -171,6 +171,12 @@ class Fighter:
         if self.hp > self.max_hp:
             self.hp = self.max_hp
 
+    def gain_mana(self, amount):
+        self.mana += amount
+
+        if self.mana > self.max_mana:
+            self.mana = self.max_mana
+
     # v16. really bad, for mass para spell. "take turn" and nb of turn decreased in AI.... Basic...shitty.
     def get_paralyzed(self, caster, number_of_turns):
         results = []

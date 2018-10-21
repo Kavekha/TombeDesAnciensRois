@@ -93,9 +93,7 @@ class Obstacle:
 
         if self.number_of_turns > 0:
             self.number_of_turns -= 1
-            print('DEBUG : turn')
         else:
-            print('DDEBUG : dispel')
             self.dispeled()
 
         print('DEBUG : Arcanic wall take turn. Nb of turn : ', self.number_of_turns)
@@ -103,11 +101,8 @@ class Obstacle:
         return results
 
     def dispeled(self):
-        print('Dispel asked.')
-        print('Before dispel : {}'.format(self.tile.blocked))
         self.tile.blocked = False
         self.tile.block_sight = False
-        print('After dispel : {}'.format(self.tile.blocked))
         self.entities.remove(self.owner)
 
 
@@ -132,11 +127,9 @@ class BasicMonster:
                     results.extend(attack_results)
         else:
             if monster.fighter.paralyzed > 0:
-                results.append({'message': Message('{} is still paralyzed.'.format(monster.name), libtcod.light_blue)})
                 monster.fighter.paralyzed -= 1
             else:
                 self.out_of_paralyze()
-
 
         return results
 
@@ -176,7 +169,6 @@ class ModifiedMindMonster:
 
         results = []
 
-        print('INFO : Damage taken while Confused')
         chance_to_stay_confuse = (self.owner.fighter.hp - damage) / self.owner.fighter.max_hp
         chance_to_stay_confuse *= 200
         rand = randint(1, 100)
@@ -192,7 +184,8 @@ class ModifiedMindMonster:
         results = []
 
         self.owner.ai = self.previous_ai
-        results.extend({'message': Message('The {} is no longer confused!'.format(self.owner.name), libtcod.red)})
+        print('Message extend de confuse, fin de confuse')
+        results.append({'message': Message('The {} is no longer confused!'.format(self.owner.name), libtcod.red)})
 
         return results
 

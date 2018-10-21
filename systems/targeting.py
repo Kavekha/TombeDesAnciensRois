@@ -14,20 +14,14 @@ class TargetType(Enum):
     TILE_OR_ENTITY = 6
 
 
-def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov_map, entities, action, left_click,
+def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov_map, entities, left_click,
                                right_click):
-    '''
-    targeting_obj : entity with spell component. The spell we want to cast.
-    target_mode = The target mode to use.
-    '''
 
-    # Target mode
-        # enemy / ally - entities fighter only
+    #targeting_obj : entity with spell or item component. The spell we want to cast or item we want to use.
 
     results = []
 
-    print('action is : ', action)
-    print('mouse action is : ', left_click, right_click)
+    print('INFO targeting result. Targeting obj is ', targeting_obj.name)
 
     target_entity = None
     target_x = None
@@ -39,17 +33,18 @@ def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov
         target_entity = False
 
     elif target_mode:
-        print('Target mode in targeting target mode ', target_mode)
 
         if target_mode == TargetType.CLOSEST_ENTITIES:
             # nearest entitites.
-            maximum_range = (targeting_obj.spell.power + int(player.fighter.int / 2))
+            # maximum_range = (targeting_obj.power + int(player.fighter.int / 2))
+            maximum_range = 12
 
             target_entity = get_closest_entities(maximum_range, player, entities, fov_map)
 
             if not target_entity:
-                results.append({'message': Message('No target around can be hit with  {}'.format(
-                    targeting_obj.name), libtcod.yellow)})
+
+                # results.append({'message': Message('No target around can be hit with  {}'.format(
+                    # targeting_obj.name), libtcod.yellow)})
                 target_entity = False
 
         elif target_mode == TargetType.SELF:
@@ -57,8 +52,8 @@ def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov
             target_entity = player
 
             if not target_entity:
-                results.append({'message': Message('ERROR : should be the caster, but doesnt work.'.format(
-                    targeting_obj.name), libtcod.yellow)})
+                # results.append({'message': Message('ERROR : should be the caster, but doesnt work.'.format(
+                    # targeting_obj.name), libtcod.yellow)})
                 target_entity = False
 
         # elif asking for coords from mouse left click
@@ -66,8 +61,8 @@ def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov
             target_x, target_y = left_click
 
             if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
-                results.append({'message': Message('You cannot target something outside your field of view.',
-                                            libtcod.yellow)})
+                # results.append({'message': Message('You cannot target something outside your field of view.',
+                #                            libtcod.yellow)})
                 target_entity = False
 
             else:
@@ -80,8 +75,8 @@ def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov
                 if target_mode == TargetType.TILE:
                     for entity in entities:
                         if entity.x == target_x and entity.y == target_y:
-                            results.append({'message': Message('There is someone there, no action can be done '
-                                                            'on this tile.', libtcod.yellow)})
+                            # results.append({'message': Message('There is someone there, no action can be done '
+                            #                                 'on this tile.', libtcod.yellow)})
                             target_entity = False
                             break
                     else:
@@ -96,12 +91,17 @@ def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov
                             break
 
                     else:
-                        results.append({'message': Message('You have to target someone.', libtcod.yellow)})
+                        # results.append({'message': Message('You have to target someone.', libtcod.yellow)})
                         target_entity = False
 
                 if target_mode == TargetType.RADIUS:
 
-                    radius = targeting_obj.spell.radius
+                    radius = 3
+                    if targeting_obj.spell:
+                        radius = targeting_obj.spell.radius
+                    elif targeting_obj.item:
+                        radius = targeting_obj.item.radius
+
                     entity_list = []
 
                     for entity in entities:
@@ -110,43 +110,41 @@ def spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov
 
                     target_entity = entity_list
 
+                    if target_entity == []:
+                        # Else, radius targeting will never end if no target.
+                        # Not great, since it will help check invisible creatures if there were.
+                        target_entity = False
+
+
         elif right_click:
             target_entity = False
 
         else:
             # waiting for left or right click.
-            print('DEBUG : target mode, else.')
             pass
 
-        print('DEBUG : gone through all steps.')
-
     else:
-        results.append({'message': Message('ERROR : Existing target mode, but no results for {}'.format(
-            targeting_obj.name), libtcod.yellow)})
+        # results.append({'message': Message('ERROR : Existing target mode, but no results for {}'.format(
+            # targeting_obj.name), libtcod.yellow)})
         target_entity = False
 
     # for all target mode, we wait for a can be cast True to cast. If false: Cancel. Else, wait for action.
-    print('Taret entity resolution')
     if target_entity:
 
-        spell_use_results = player.spellbook.cast_spell(targeting_obj,
-                                                        mana_cost=targeting_obj.spell.mana_cost,
-                                                        entities=entities, target_x=target_x,
-                                                        target_y=target_y,
-                                                        target_entity=target_entity,
-                                                        to_cast=True, game_map=game_map)
-        results.extend(spell_use_results)
+        print('INFO : targeting, if target entity, targeting obj is ', targeting_obj)
+
+        return target_entity
+        # results.extend(spell_use_results)
 
     # Not target_entity given, still waiting to receive one.
     elif target_entity == False:
         print('DEBUG : no target entity :', target_entity)
-        results.append({'targeting_cancelled': True})
+        # results.append({'targeting_cancelled': True})
+        return False
 
     else:
         # still waiting to receive a target.
         pass
-
-    return results
 
 
 def get_closest_entities(maximum_range, caster, entities, fov_map):

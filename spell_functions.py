@@ -124,8 +124,10 @@ def cast_arcanic_wall(caster, spell_entity, **kwargs):
 
     damage = caster.fighter.int * power
 
+    print('DEBUG : Target entity in arcanic wall is ', target_entity)
     print('DEBUG : game map is : ', game_map)
     tile = target_entity
+    print('DEBUG : Tile in arcanic wall is ', tile)
 
     ai_component = Obstacle(tile, entities, damage)
     arcanic_wall = Entity(target_x, target_y, '+', libtcod.darkest_blue, name='Arcanic Wall', blocks=True,
@@ -148,12 +150,6 @@ def cast_example_enemy_target(caster, spell_entity, **kwargs):
 
     target_entity = kwargs.get('target_entity')
     game_map = kwargs.get('game_map')
-
-    #entities = kwargs.get('entities')
-    #fov_map = kwargs.get('fov_map')
-    #radius = kwargs.get('radius')
-    #target_x = kwargs.get('target_x')
-    #target_y = kwargs.get('target_y')
 
     results = []
 
