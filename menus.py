@@ -32,6 +32,18 @@ def menu(con, header, options, width, screen_width, screen_height):
     libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
 
+def spellbook_menu(con, header, player, spellbook, spellbook_width, screen_width, screen_height):
+    if len(spellbook.spells) == 0:
+        options = ['No spell in your spellbook.']
+    else:
+        options = []
+
+        for spell in player.spellbook.spells:
+            options.append(spell.name)
+
+    menu(con, header, options, spellbook_width, screen_width, screen_height)
+
+
 def inventory_menu(con, header, player, inventory, inventory_width, screen_width, screen_height):
     if len(inventory.items) == 0:
         options = ['inventory is empty.']

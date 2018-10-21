@@ -2,6 +2,7 @@ import libtcodpy as libtcod
 
 from death_functions import kill_monster, kill_player
 from components.death import Death
+from components.spellbook import TargetType
 
 from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
@@ -210,6 +211,8 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         game_state = GameStates.PLAYERS_TURN
 
     targeting_item = None
+    targeting_obj = None
+    target_mode = None
     victory = False
 
     while not libtcod.console_is_window_closed():
@@ -235,9 +238,11 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         move = action.get('move')
         wait = action.get('wait')
         pickup = action.get('pickup')
+        show_spellbook = action.get('spellbook')
         show_inventory = action.get('show_inventory')
         drop_inventory = action.get('drop_inventory')
         inventory_index = action.get('inventory_index')
+        spellbook_index = action.get('spellbook_index')
         take_stairs = action.get('take_stairs')
         level_up = action.get('level_up')
         show_character_screen = action.get('show_character_screen')
@@ -279,6 +284,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             else:
                 message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
 
+        if show_spellbook:
+            previous_game_state = game_state
+            game_state = GameStates.SHOW_SPELLBOOK
+
         if show_inventory:
             previous_game_state = game_state
             game_state = GameStates.SHOW_INVENTORY
@@ -286,6 +295,18 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if drop_inventory:
             previous_game_state = game_state
             game_state = GameStates.DROP_INVENTORY
+
+        # v 16 Spellbook
+        if spellbook_index is not None and previous_game_state != GameStates.PLAYER_DEAD and \
+                spellbook_index < len(player.spellbook.spells):
+
+            spell = player.spellbook.spells[spellbook_index]
+
+            if game_state == GameStates.SHOW_SPELLBOOK:
+                if spell.spell.mana_cost > player.fighter.mana:
+                    message_log.add_message(Message('Not enough mana to cast {}'.format(spell.name), libtcod.yellow))
+                else:
+                    player_turn_results.extend(player.spellbook.cast_spell(spell, entities=entities, fov_map=fov_map))
 
         if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < \
                 len(player.inventory.items):
@@ -323,6 +344,48 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             previous_game_state = game_state
             game_state = GameStates.CHARACTER_SCREEN
 
+        # v16 spellbook
+        if game_state == GameStates.SPELL_TARGETING:
+            # targeting without target_mode, not normal.
+            if not target_mode:
+                print('ERROR : Spell targeting without target mode.')
+            else:
+                if left_click:
+                    target_x, target_y = left_click
+
+                    #in anycase, should be in fov.
+                    if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
+                        print('DEBUG : Pas dans la fov')
+                        message_log.add_message(Message('You cannot target something outside your field of view.',
+                                                        libtcod.yellow))
+
+                    else:
+                        target_entity = None
+                        print('DEBUG : Dans le champ de vision')
+                        # other target mode are ok, as soon as in fov.
+                        if target_mode in (TargetType.ALLIED, TargetType.ENEMY):
+                            print('DEBUG : target mode ALLY ENEMY')
+                            # Is it a fighter entity?
+                            for entity in entities:
+                                if entity.x == target_x and entity.y == target_y and entity.fighter:
+                                    target_entity = entity
+                                    break
+                            else:
+                                print('DEBUG : fighter pas trouvé.')
+                                message_log.add_message(Message('You have to target someone.', libtcod.yellow))
+
+                        spell_use_results = player.spellbook.cast_spell(targeting_obj,
+                                                                        mana_cost=targeting_obj.spell.mana_cost,
+                                                                        entities=entities, target_x=target_x,
+                                                                        target_y=target_y, target_entity=target_entity,
+                                                                        to_cast=True)
+
+                        player_turn_results.extend(spell_use_results)
+
+                elif right_click:
+                    player_turn_results.append({'targeting_cancelled': True})
+
+
         if game_state == GameStates.TARGETING:
             if left_click:
                 target_x, target_y = left_click
@@ -353,7 +416,11 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             item_dropped = player_turn_result.get('item_dropped')
             equip = player_turn_result.get('equip')
             targeting = player_turn_result.get('targeting')
+            # v16 spellbook.
             targeting_cancelled = player_turn_result.get('targeting_cancelled')
+            # v16 type of targeting. Receive spell entity and target type.
+            spell_targeting = player_turn_result.get('spell_targeting')
+            mana_cost = player_turn_result.get('mana_cost')
             xp = player_turn_result.get('xp')
 
             if message:
@@ -397,6 +464,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             if item_consumed:
                 game_state = GameStates.ENEMY_TURN
 
+            if mana_cost:
+                player.fighter.mana -= mana_cost
+                game_state = GameStates.ENEMY_TURN
+
             if item_dropped:
                 entities.append(item_dropped)
                 game_state = GameStates.ENEMY_TURN
@@ -415,6 +486,17 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                         message_log.add_message(Message('You dequipped the {}.'.format(dequipped.name)))
 
                 game_state = GameStates.ENEMY_TURN
+
+            # v16
+            if spell_targeting:
+                previous_game_state = GameStates.PLAYERS_TURN
+                game_state = GameStates.SPELL_TARGETING
+
+                targeting_obj = spell_targeting['spell']
+                target_mode = spell_targeting['target_mode']
+
+                # preformated msg if no targeting obj message.
+                message_log.add_message(targeting_obj.spell.targeting_message)
 
             if targeting:
                 previous_game_state = GameStates.PLAYERS_TURN

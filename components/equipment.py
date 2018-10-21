@@ -31,6 +31,18 @@ class Equipment:
         return bonus
 
     @property
+    def int_bonus(self):
+        bonus = 0
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.int_bonus
+
+        if self.off_hand and self.off_hand.equippable:
+            bonus += self.off_hand.equippable.int_bonus
+
+        return bonus
+
+    @property
     def max_hp_bonus(self):
         bonus = 0
 
@@ -39,6 +51,18 @@ class Equipment:
 
         if self.off_hand and self.off_hand.equippable:
             bonus += self.off_hand.equippable.max_hp_bonus
+
+        return bonus
+
+    @property
+    def max_mana_bonus(self):
+        bonus = 0
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.max_mana_bonus
+
+        if self.off_hand and self.off_hand.equippable:
+            bonus += self.off_hand.equippable.max_mana_bonus
 
         return bonus
 

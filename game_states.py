@@ -11,3 +11,5 @@ class GameStates(Enum):
     LEVEL_UP = 7
     CHARACTER_SCREEN = 8
     VICTORY = 9
+    SHOW_SPELLBOOK = 10
+    SPELL_TARGETING = 11

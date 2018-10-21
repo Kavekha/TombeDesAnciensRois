@@ -9,8 +9,10 @@ import math
 class Entity:
     # generic object to represent players, enemies, items, etc
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None,
-                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None, death=None):
+                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None, death=None,
+                 spellbook=None, spell=None):
         # v14 death added
+        # v16 spellbook added
         self.x = x
         self.y = y
         self.char = char
@@ -27,6 +29,8 @@ class Entity:
         self.equipment = equipment
         self.equippable = equippable
         self.death = death
+        self.spellbook = spellbook
+        self.spell = spell
 
         if self.fighter:
             self.fighter.owner = self
@@ -59,6 +63,12 @@ class Entity:
 
         if self.death:
             self.death.owner = self
+
+        if self.spellbook:
+            self.spellbook.owner = self
+
+        if self.spell:
+            self.spell.owner = self
 
     def move(self, dx, dy):
         self.x += dx

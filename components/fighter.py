@@ -16,10 +16,11 @@ class DamageType(Enum):
     FIRE = 3
     LIGHTNING = 4
     LIFE = 5
+    ARCANE = 6
 
 
 class Fighter:
-    def __init__(self, hp, str, dex, defense=0, resistance=0, xp=0):
+    def __init__(self, hp, str, dex, int=0, mana=0, defense=0, resistance=0, xp=0, background=None):
         self.base_max_hp = hp
         self.hp = hp
         self.base_defense = defense
@@ -27,6 +28,44 @@ class Fighter:
         self.xp = xp
         self.base_str = str
         self.base_dex = dex
+        self.background = background
+        self.base_int = int
+        self.base_max_mana = mana
+        self.mana = mana
+
+        if self.background == 'warrior':
+            self.base_max_hp += 50
+            self.base_str += 2
+            self.base_dex += 1
+            self.base_int += 1
+
+        if self.background == 'mage':
+            self.base_max_hp += 25
+            self.base_str += 0
+            self.base_dex += 1
+            self.base_int += 3
+            self.base_max_mana += 25
+
+        self.hp = self.base_max_hp
+        self.mana = self.base_max_mana
+
+    @property
+    def max_mana(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.max_mana_bonus
+        else:
+            bonus = 0
+
+        return self.base_max_mana + bonus
+
+    @property
+    def int(self):
+        if self.owner and self.owner.equipment:
+            bonus = self.owner.equipment.int_bonus
+        else:
+            bonus = 0
+
+        return self.base_int + bonus
 
     @property
     def str(self):
@@ -87,8 +126,11 @@ class Fighter:
             results.append({'message': Message('{} attacks {} for {} hit points.'.format(
                 attacker.owner.name.capitalize(), self.owner.name, str(damage)), libtcod.white)})
 
-        if damage_type == DamageType.FIRE or damage_type == DamageType.LIGHTNING:
+        if damage_type in (DamageType.FIRE, DamageType.LIGHTNING, DamageType.ARCANE):
             damage -= self.resistance
+
+            results.append({'message': Message('{} blast {} with magical energy for {} hit points.'.format(
+                attacker.name.capitalize(), self.owner.name, str(damage)), libtcod.white)})
 
         self.hp -= damage
 
