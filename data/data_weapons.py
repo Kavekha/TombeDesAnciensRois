@@ -55,13 +55,13 @@ def generate_weapon(weapon_name, x, y):
     dex_bonus = weapon.get('dex_bonus')
     max_hp_bonus = weapon.get('max_hp_bonus')
     defense_bonus = weapon.get('defense_bonus')
-    resisance_bonus = weapon.get('resistance_bonus')
+    resistance_bonus = weapon.get('resistance_bonus')
     aspect = weapon.get('aspect')
     color = weapon.get('color')
 
     equippable_component = Equippable(equipment_slot, str_bonus=str_bonus, dex_bonus=dex_bonus,
                                       max_hp_bonus=max_hp_bonus, defense_bonus=defense_bonus,
-                                      resistance_bonus=resisance_bonus)
+                                      resistance_bonus=resistance_bonus)
     weapon_to_return = Entity(x, y, aspect, color, name, equippable=equippable_component)
 
     return weapon_to_return

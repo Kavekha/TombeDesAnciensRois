@@ -1,7 +1,8 @@
 import libtcodpy as libtcod
 
 from game_messages import Message
-from components.ai import ConfusedMonster
+from components.ai import ConfusedMonster, BrainStates
+
 
 def heal(*args, **kwargs):
     entity = args[0]
@@ -21,13 +22,17 @@ def heal(*args, **kwargs):
 
 
 def cast_lightning(*args, **kwargs):
+    print('DEBUG : Lightning cast!')
     caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
-    damage = kwargs.get('damage')
+    damage = kwargs.get('power')
     maximum_range = kwargs.get('maximum_range')
     game_map = kwargs.get('game_map')
     damage_type = kwargs.get('damage_type')
+
+    print('DEBUG : lightning : args {} , entities {} , fov map {} , damage {} , max range {} , game map {} , '
+          'damagetype {} '.format(caster, entities, fov_map, damage, maximum_range, game_map, damage_type ))
 
     results = []
 
@@ -53,6 +58,7 @@ def cast_lightning(*args, **kwargs):
 
 
 def cast_fireball(*args, **kwargs):
+    print('DEBUG : fireball cast!')
     caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
@@ -94,14 +100,24 @@ def cast_confuse(*args, **kwargs):
 
     for entity in entities:
         if entity.x == target_x and entity.y == target_y and entity.ai:
-            confused_ai = ConfusedMonster(entity.ai, 10)
+            # v15.
+            if entity.ai.state == BrainStates.CONFUSED:
 
-            confused_ai.owner = entity
-            entity.ai = confused_ai
+                entity.ai.number_of_turns += 5
 
-            results.append({'consumed': True, 'message': Message(
-                'The eyes of the {} look vacant, as he stats to stumble around!'.format(entity.name),
-                libtcod.light_green)})
+                results.append({'consumed': True, 'message': Message(
+                    'The eyes of the {} change briefly, then he keep stumbling around!'.format(entity.name),
+                    libtcod.light_green)})
+            # before v15, no if / else.
+            else:
+                confused_ai = ConfusedMonster(entity.ai, 10)
+
+                confused_ai.owner = entity
+                entity.ai = confused_ai
+
+                results.append({'consumed': True, 'message': Message(
+                    'The eyes of the {} look vacant, as he stats to stumble around!'.format(entity.name),
+                    libtcod.light_green)})
 
             break
 

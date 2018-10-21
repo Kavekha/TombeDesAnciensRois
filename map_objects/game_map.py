@@ -134,7 +134,7 @@ class GameMap:
             'fireball_scroll': from_dungeon_level([[5, 1], [10, 3], [25, 6]], self.dungeon_level),
             'lightning_scroll': from_dungeon_level([[10, 2], [15, 5]], self.dungeon_level),
             'sword': from_dungeon_level([[1, 4]], self.dungeon_level),
-            'shield': from_dungeon_level([[50, 1], [15, 8]], self.dungeon_level)
+            'shield': from_dungeon_level([[15, 8]], self.dungeon_level)
         }
 
         for i in range(number_of_monsters):

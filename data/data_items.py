@@ -51,7 +51,7 @@ def get_items_list(item_name):
             'maximum_range': 5,
             'aspect': '#',
             'color': libtcod.yellow,
-            'targeting': True,
+            'targeting': False,
             'damage_type': DamageType.LIGHTNING
         },
         'confusion_scroll': {
