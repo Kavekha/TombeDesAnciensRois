@@ -3,7 +3,7 @@ import libtcodpy as libtcod
 from item_functions import heal, cast_fireball, cast_lightning, cast_confuse
 from render_functions import RenderOrder
 
-from components.fighter import DamageType
+from damage_types import DamageType
 from components.item import Item
 
 from game_messages import Message

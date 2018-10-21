@@ -4,18 +4,18 @@ import datetime
 import os
 
 
-def create_score_bill(player, dungeon_level, killer, version):
+def create_score_bill(player, dungeon_level, killer, dungeon_name):
 
     if not os.path.isfile('scores'):
         print('DEBUG : no score file. Creating one.')
         with open('scores.txt', 'w') as score_file:
-            score_file.write('Player name, Level, Status, Floor, Date, Game version \n')
+            score_file.write('Player name, Level, Status, Floor, Date, Dungeon \n')
 
     player_name = str(player.name)
     player_level = str(player.level.current_level)
     dungeon_level = str(dungeon_level)
     date = str(datetime.date.today())
-    game_version = str(version)
+    dungeon_name = dungeon_name
 
     # Deal with VICTORY instead of Killed by.
     if type(killer) == str:
@@ -27,7 +27,7 @@ def create_score_bill(player, dungeon_level, killer, version):
 
     with open('scores', 'a') as score_file:
         score_file.write(player_name + ',' + player_level + ',' + status + ',' + dungeon_level + ',' + date
-                         + ',' + game_version + '\n')
+                         + ',' + dungeon_name + '\n')
 
 
 def remove_older_scores(file):
@@ -68,7 +68,7 @@ def read_score_bill():
     if not os.path.isfile('scores'):
         print('DEBUG : no score file. Creating one.')
         with open('scores', 'w') as score_file:
-            score_file.write('Player name, Level, Status, Floor, Date, Game version \n')
+            score_file.write('Player name, Level, Status, Floor, Date, Dungeon \n')
 
     with open('scores', 'r') as score_file:
         scores = score_file.readlines()

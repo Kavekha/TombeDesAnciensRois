@@ -1,22 +1,12 @@
 import libtcodpy as libtcod
 
-from enum import Enum
 from random import randint
 
+from damage_types import DamageType
 from game_messages import Message
 from loader_functions.scores_loader import create_score_bill    #v14a
 
 from components.ai import BrainStates
-
-
-# v15
-class DamageType(Enum):
-    UNKNOWN = 1
-    PHYSICAL = 2
-    FIRE = 3
-    LIGHTNING = 4
-    LIFE = 5
-    ARCANE = 6
 
 
 class Fighter:
@@ -144,7 +134,7 @@ class Fighter:
         if self.hp <= 0:
             results.append({'dead': self.owner, 'xp': self.xp})
             if not self.owner.ai:
-                create_score_bill(self.owner, game_map.dungeon_level, attacker, game_map.version)
+                create_score_bill(self.owner, game_map.dungeon_level, attacker, game_map.name)
 
         return results
 

@@ -135,6 +135,7 @@ class Entity:
 
 def get_blocking_entities_at_location(entities, destination_x, destination_y):
     for entity in entities:
-        if entity.blocks and entity.x == destination_x and entity.y == destination_y:
+        # v16 entity.fighter to deal with obstacle like arcanic wall.
+        if entity.blocks and entity.x == destination_x and entity.y == destination_y and entity.fighter:
             return entity
     return None

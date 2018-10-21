@@ -24,7 +24,7 @@ from data.data_spells import generate_spell
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.16'
+    version = '0.16a'
     screen_width = 80
     screen_height = 50
 
@@ -109,10 +109,11 @@ def get_game_variables(constants):
     potion = generate_item('healing_potion', 0, 0)
     player.inventory.add_item(potion)
 
-    spell = generate_spell('magic_missile', 0, 0)
-    player.spellbook.add_spell(spell)
+    for spell_to_create in ('magic_missile', 'arcanic_wall'):
+        spell = generate_spell(spell_to_create, 0, 0)
+        player.spellbook.add_spell(spell)
 
-    game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'])
+    game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'], 'Dungeon')
     game_map.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],
                       constants['map_width'], constants['map_height'], player, entities)
 

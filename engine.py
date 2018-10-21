@@ -4,6 +4,8 @@ from death_functions import kill_monster, kill_player
 from components.death import Death
 from components.spellbook import TargetType
 
+from spell_functions import get_closest_entities
+
 from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message
@@ -306,7 +308,9 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 if spell.spell.mana_cost > player.fighter.mana:
                     message_log.add_message(Message('Not enough mana to cast {}'.format(spell.name), libtcod.yellow))
                 else:
-                    player_turn_results.extend(player.spellbook.cast_spell(spell, entities=entities, fov_map=fov_map))
+                    player_turn_results.extend(player.spellbook.cast_spell(spell, entities=entities, fov_map=fov_map,
+                                                                           to_cast=spell.spell.to_cast,
+                                                                           game_map=game_map))
 
         if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < \
                 len(player.inventory.items):
@@ -346,9 +350,31 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
         # v16 spellbook
         if game_state == GameStates.SPELL_TARGETING:
+
             # targeting without target_mode, not normal.
             if not target_mode:
                 print('ERROR : Spell targeting without target mode.')
+
+            elif target_mode == TargetType.CLOSEST_ENTITIES:
+                # nearest entitites.
+                maximum_range = (targeting_obj.spell.power + int(player.fighter.int / 2))
+
+                target_entity = get_closest_entities(maximum_range, player, entities, fov_map)
+
+                if target_entity:
+                    spell_use_results = player.spellbook.cast_spell(targeting_obj,
+                                                        mana_cost=targeting_obj.spell.mana_cost,
+                                                        entities=entities, target_entity=target_entity,
+                                                        to_cast=True, game_map=game_map)
+
+                    player_turn_results.extend(spell_use_results)
+
+                else:
+                    print('DEBUG : targeting list empty')
+                    message_log.add_message(Message('There is no enemy around you can strike.',
+                                                    libtcod.yellow))
+                    player_turn_results.append({'targeting_cancelled': True})
+
             else:
                 if left_click:
                     target_x, target_y = left_click
@@ -370,21 +396,40 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                                 if entity.x == target_x and entity.y == target_y and entity.fighter:
                                     target_entity = entity
                                     break
+
                             else:
                                 print('DEBUG : fighter pas trouvé.')
                                 message_log.add_message(Message('You have to target someone.', libtcod.yellow))
+                                # to check if needed
+                                spell_use_results = {'targeting_cancelled': True}
 
-                        spell_use_results = player.spellbook.cast_spell(targeting_obj,
+                            spell_use_results = player.spellbook.cast_spell(targeting_obj,
+                                                                            mana_cost=targeting_obj.spell.mana_cost,
+                                                                            entities=entities, target_x=target_x,
+                                                                            target_y=target_y,
+                                                                            target_entity=target_entity,
+                                                                            to_cast=True, game_map=game_map)
+
+                            player_turn_results.extend(spell_use_results)
+
+                        elif target_mode == TargetType.TILE:
+                            for entity in entities:
+                                if entity.x == target_x and entity.y == target_y:
+                                    message_log.add_message(Message('There is someone there, no action can be done '
+                                                                    'on this tile.', libtcod.yellow))
+                                    player_turn_results.append({'targeting_cancelled': True})
+                                    break
+                            else:
+                                spell_use_results = player.spellbook.cast_spell(targeting_obj,
                                                                         mana_cost=targeting_obj.spell.mana_cost,
                                                                         entities=entities, target_x=target_x,
                                                                         target_y=target_y, target_entity=target_entity,
-                                                                        to_cast=True)
+                                                                        to_cast=True, game_map=game_map)
 
-                        player_turn_results.extend(spell_use_results)
+                                player_turn_results.extend(spell_use_results)
 
                 elif right_click:
                     player_turn_results.append({'targeting_cancelled': True})
-
 
         if game_state == GameStates.TARGETING:
             if left_click:
@@ -397,9 +442,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player_turn_results.append({'targeting_cancelled': True})
 
         if exit:
-            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN):
+            if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY, GameStates.CHARACTER_SCREEN,
+                              GameStates.SHOW_SPELLBOOK):
                 game_state = previous_game_state
-            elif game_state == GameStates.TARGETING:
+            elif game_state in (GameStates.TARGETING, GameStates.SPELL_TARGETING):
                 player_turn_results.append({'targeting_cancelled': True})
             else:
                 save_game(player, entities, game_map, message_log, game_state)
@@ -495,8 +541,9 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 targeting_obj = spell_targeting['spell']
                 target_mode = spell_targeting['target_mode']
 
-                # preformated msg if no targeting obj message.
-                message_log.add_message(targeting_obj.spell.targeting_message)
+                # v16 : msg if no targeting obj message.
+                if targeting_obj.spell.targeting_message:
+                    message_log.add_message(targeting_obj.spell.targeting_message)
 
             if targeting:
                 previous_game_state = GameStates.PLAYERS_TURN
@@ -505,10 +552,6 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 targeting_item = targeting
 
                 message_log.add_message(targeting_item.item.targeting_message)
-
-            if targeting_cancelled:
-                game_state = previous_game_state
-                message_log.add_message(Message('Targeting cancelled'))
 
         if game_state == GameStates.ENEMY_TURN:
             for entity in entities:
@@ -544,7 +587,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         # v14 victory condition.
         if game_state == GameStates.VICTORY and not victory:
             victory = True
-            create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  # v14
+            create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.name)  # v14
 
 
 if __name__ == '__main__':

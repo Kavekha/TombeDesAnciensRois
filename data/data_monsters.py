@@ -115,11 +115,11 @@ def get_monster_list(monster_name):
             'death_function': kill_monster,
             'ai': BasicMonster(),
             'hp': 20,
-            'str': 3,
+            'str': 4,
             'dex': 2,
             'defense': 2,
             'resistance': 0,
-            'xp': 28
+            'xp': 33
         },
         'zombie': {
             'name': 'Zombie',
@@ -168,10 +168,10 @@ def get_monster_list(monster_name):
             'ai': BasicMonster(),
             'hp': 120,
             'str': 18,
-            'dex': 3,
-            'defense': 5,
+            'dex': 2,
+            'defense': 4,
             'resistance': 0,
-            'xp': 624
+            'xp': 609
         },
         'vampire': {
             'name': 'Vampire',
@@ -180,11 +180,11 @@ def get_monster_list(monster_name):
             'death_function': kill_monster,
             'ai': BasicMonster(),
             'hp': 90,
-            'str': 12,
-            'dex': 12,
+            'str': 14,
+            'dex': 8,
             'defense': 4,
             'resistance': 0,
-            'xp': 504
+            'xp': 494
         },
         'ancient_king_necropole': {
             'name': 'Ancient King of the Necropole',
@@ -193,9 +193,9 @@ def get_monster_list(monster_name):
             'death_function': kill_final_boss,
             'ai': BasicMonster(),
             'hp': 180,
-            'str': 24,
-            'dex': 24,
-            'defense': 6,
+            'str': 28,
+            'dex': 16,
+            'defense': 5,
             'resistance': 0,
             'xp': 0
         }
