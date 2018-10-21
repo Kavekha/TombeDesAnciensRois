@@ -43,6 +43,9 @@ def inventory_menu(con, header, player, inventory, inventory_width, screen_width
                 options.append('{} (on main hand.)'.format(item.name))
             elif player.equipment.off_hand == item:
                 options.append('{} (on off hand.)'.format(item.name))
+            # v15 Stack system.
+            elif item.item.stack > 1:
+                options.append('{} ( {} )'.format(item.name, str(item.item.stack)))
             else:
                 options.append(item.name)
 

@@ -114,6 +114,18 @@ def handle_player_turn_keys(key):
     return {}
 
 
+def handle_load_menu(key):
+    index = key.c - ord('a')
+
+    if index >= 0:
+        return {'load_chosen': index}
+
+    if key.vk == libtcod.KEY_ESCAPE:
+        return {'load_exit': True}
+
+    return {}
+
+
 def handle_inventory_keys(key):
     index = key.c - ord('a')
 

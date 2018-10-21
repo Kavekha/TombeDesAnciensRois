@@ -21,7 +21,7 @@ from data.data_weapons import generate_weapon
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.15b'
+    version = '0.15c'
     screen_width = 80
     screen_height = 50
 
