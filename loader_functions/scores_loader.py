@@ -30,4 +30,6 @@ def create_score_bill(player, dungeon_level, killer, version):
 
 def read_score_bill():
     with open('scores', 'r') as score_file:
-        print(score_file.readlines())
+        scores = score_file.readlines()
+
+    return scores

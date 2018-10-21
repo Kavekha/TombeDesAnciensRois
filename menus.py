@@ -56,7 +56,28 @@ def main_menu(con, background_image, screen_width, screen_height, version):
     libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 2), libtcod.BKGND_NONE,
                              libtcod.CENTER, version)
 
-    menu(con, ' ', ['Play a new game', 'Continue last game', 'Quit'], 24, screen_width, screen_height)
+    menu(con, ' ', ['Play a new game', 'Continue last game', 'Score', 'Quit'], 24, screen_width, screen_height)
+
+
+# v14
+def score_bill_menu(background_image, screen_width, screen_height, score_list):
+
+    libtcod.image_blit_2x(background_image, 0, 0, 0)
+
+    libtcod.console_set_default_foreground(0, libtcod.light_yellow)
+    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 4) - 4, libtcod.BKGND_NONE,
+                             libtcod.CENTER, 'BEST SCORES')
+
+    y = 0
+    for i in score_list:
+        libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 4) + y, libtcod.BKGND_NONE, libtcod.CENTER, i)
+        if y == 0:
+            y += 2
+        else:
+            y += 1
+
+    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 2), libtcod.BKGND_NONE,
+                             libtcod.CENTER, 'Press ESC for Main Menu')
 
 
 def level_up_menu(con, header, player, menu_width, screen_width, screen_height):
@@ -82,11 +103,11 @@ def character_screen(player, character_screen_width, character_screen_height, sc
                                   libtcod.LEFT, 'Experience to level : {}'.format(
             player.level.experience_to_next_level))
     libtcod.console_print_rect_ex(window, 0, 6, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Maximum HP: {}'.format(player.fighter.base_max_hp))
+                                  libtcod.LEFT, 'Maximum HP: {}'.format(player.fighter.max_hp))
     libtcod.console_print_rect_ex(window, 0, 7, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Attack : {}'.format(player.fighter.base_power))
+                                  libtcod.LEFT, 'Attack : {}'.format(player.fighter.power))
     libtcod.console_print_rect_ex(window, 0, 8, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Defense : {}'.format(player.fighter.base_defense))
+                                  libtcod.LEFT, 'Defense : {}'.format(player.fighter.defense))
 
     x = screen_width // 2 - character_screen_width // 2
     y = screen_height // 2 - character_screen_height // 2
