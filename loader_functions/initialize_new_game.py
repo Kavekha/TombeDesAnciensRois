@@ -4,8 +4,6 @@ from components.fighter import Fighter
 from components.inventory import Inventory
 from components.level import Level
 from components.equipment import Equipment
-from components.equippable import Equippable
-from equipement_slots import EquipmentSlots
 from components.death import Death
 
 from death_functions import kill_player
@@ -23,7 +21,7 @@ from data.data_weapons import generate_weapon
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.15'
+    version = '0.15b'
     screen_width = 80
     screen_height = 50
 

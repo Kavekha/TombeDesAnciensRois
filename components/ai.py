@@ -1,11 +1,20 @@
 import libtcodpy as libtcod
-
 from random import randint
+from enum import Enum
 
 from game_messages import Message
 
 
+# v 15
+class BrainStates(Enum):
+    NORMAL = 0
+    CONFUSED = 1
+
+
 class BasicMonster:
+    def __init__(self):
+        self.state = BrainStates.NORMAL
+
     def take_turn(self, target, fov_map, game_map, entities):
         results = []
 
@@ -27,6 +36,7 @@ class ConfusedMonster:
     def __init__(self, previous_ai, number_of_turns=10):
         self.previous_ai = previous_ai
         self.number_of_turns = number_of_turns
+        self.state = BrainStates.CONFUSED
 
     def take_turn(self, target, fov_map, game_map, entities):
         results = []
@@ -40,7 +50,31 @@ class ConfusedMonster:
 
             self.number_of_turns -= 1
         else:
-            self.owner.ai = self.previous_ai
-            results.append({'message': Message('The {} is no longer onfused!'.format(self.owner.name), libtcod.red)})
+            results.extend(self.out_of_confusion())
 
         return results
+
+    def take_damage(self, damage):
+        print('INFO : Damage taken while Confused')
+        chance_to_stay_confuse = (self.owner.fighter.hp - damage) / self.owner.fighter.max_hp
+        chance_to_stay_confuse *= 200
+        rand = randint(1, 100)
+
+        print('DEBUG : chance to stay confuse : {}, rand {}'.format(chance_to_stay_confuse, rand))
+
+        if rand > chance_to_stay_confuse:
+            self.number_of_turns -= 2
+            print('INFO : confuse time reduces by damage.')
+            if self.number_of_turns <= 0:
+                self.out_of_confusion()
+        else:
+            print('INFO : Damage taken but effect not reduce.')
+
+    def out_of_confusion(self):
+        results = []
+
+        self.owner.ai = self.previous_ai
+        results.append({'message': Message('The {} is no longer confused!'.format(self.owner.name), libtcod.red)})
+
+        return results
+

@@ -9,7 +9,8 @@ import math
 class Entity:
     # generic object to represent players, enemies, items, etc
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None,
-                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None, death=None):  #v4 death added
+                 item=None, inventory=None, stairs=None, level=None, equipment=None, equippable=None, death=None):
+        # v14 death added
         self.x = x
         self.y = y
         self.char = char

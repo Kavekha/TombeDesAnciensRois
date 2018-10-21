@@ -99,10 +99,11 @@ def generate_monster(monster_name, x, y):
     str = monster.get('str')
     dex = monster.get('dex')
     defense = monster.get('defense')
-    power = monster.get('power')
     xp = monster.get('xp')
+    resistance = monster.get('resistance')
+    state = monster.get('state')
 
-    fighter_component = Fighter(hp, str, dex, defense, power, xp)
+    fighter_component = Fighter(hp=hp, str=str, dex=dex, defense=defense, resistance=resistance, xp=xp)
     ai_component = ai
     death_component = Death(death_function)
 

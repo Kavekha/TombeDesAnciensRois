@@ -6,6 +6,8 @@ from random import randint
 from game_messages import Message
 from loader_functions.scores_loader import create_score_bill    #v14a
 
+from components.ai import BrainStates
+
 
 # v15
 class DamageType(Enum):
@@ -88,6 +90,13 @@ class Fighter:
 
         self.hp -= damage
 
+        if self.owner.ai:
+            if self.owner.ai.state == BrainStates.CONFUSED:
+                self.owner.ai.take_damage(damage)
+                print('INFO : Confused AI ')
+            else:
+                print('INFO : Not confused ai, ai = ', self.owner.ai)
+
         if self.hp <= 0:
             results.append({'dead': self.owner, 'xp': self.xp})
             if not self.owner.ai:
@@ -100,6 +109,10 @@ class Fighter:
 
         hit_chance = int((self.dex + 2) / ((target.fighter.dex + 2) * 2) * 100)
         rand = randint(1, 100)
+
+        if target.ai:
+            if target.ai.state == BrainStates.CONFUSED:
+                rand = 0
 
         if rand <= hit_chance:
             damage = self.str
