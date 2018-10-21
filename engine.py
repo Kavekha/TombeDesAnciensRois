@@ -153,6 +153,10 @@ def main_screen(constants):
             validate_creation = action.get('validate_creation')
             letter = action.get('letter')
 
+            if letter == 'backspace':
+                if len(character_name) > 0:
+                    character_name = character_name[:-1]
+
             if letter in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '-']:
                 if len(character_name) < 10:
                     character_name += str(letter)
@@ -206,6 +210,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         game_state = GameStates.PLAYERS_TURN
 
     targeting_item = None
+    victory = False
 
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
@@ -443,21 +448,21 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
                             message_log.add_message(message)
 
-                            if game_state == GameStates.PLAYER_DEAD:
+                            # v15 'or' to fix victory message not displayed, and player action possible.
+                            if game_state == GameStates.PLAYER_DEAD or game_state == GameStates.VICTORY:
                                 break
 
-                    if game_state == GameStates.PLAYER_DEAD:
+                    # v15 fix victory displayed
+                    if game_state == GameStates.PLAYER_DEAD or game_state == GameStates.VICTORY:
                         break
 
             else:
                 game_state = GameStates.PLAYERS_TURN
 
         # v14 victory condition.
-        if game_state == GameStates.VICTORY:
-            score_created = False
-            if not score_created:
-                create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  # v14
-                game_state = GameStates.PLAYER_DEAD
+        if game_state == GameStates.VICTORY and not victory:
+            victory = True
+            create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  # v14
 
 
 if __name__ == '__main__':

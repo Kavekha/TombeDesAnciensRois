@@ -26,7 +26,8 @@ def get_items_list(item_name):
             'radius': None,
             'targeting': False,
             'maximum_range': None,
-            'damage_type': DamageType.LIFE
+            'damage_type': DamageType.LIFE,
+            'stackable': True
         },
         'fireball_scroll': {
             'name': 'Fireball scroll',
@@ -39,7 +40,8 @@ def get_items_list(item_name):
             'color': libtcod.red,
             'targeting': True,
             'maximum_range': None,
-            'damage_type': DamageType.FIRE
+            'damage_type': DamageType.FIRE,
+            'stackable': True
         },
         'lightning_scroll': {
             'name': 'Lightning scroll',
@@ -52,7 +54,8 @@ def get_items_list(item_name):
             'aspect': '#',
             'color': libtcod.yellow,
             'targeting': False,
-            'damage_type': DamageType.LIGHTNING
+            'damage_type': DamageType.LIGHTNING,
+            'stackable': True
         },
         'confusion_scroll': {
             'name': 'Confusion scroll',
@@ -65,14 +68,15 @@ def get_items_list(item_name):
             'color': libtcod.light_pink,
             'targeting': True,
             'maximum_range': None,
-            'damage_type': DamageType.UNKNOWN
+            'damage_type': DamageType.UNKNOWN,
+            'stackable': True
         }
     }
 
     return items_list[item_name]
 
 
-def generate_item(item_name, x, y, game_map):
+def generate_item(item_name, x, y, game_map=None):
     item = get_items_list(item_name)
 
     use_function = item.get('use_function')
@@ -86,10 +90,11 @@ def generate_item(item_name, x, y, game_map):
     targeting = item.get('targeting')
     maximum_range = item.get('maximum_range')
     damage_type = item.get('damage_type')
+    stackable = item.get('stackable')
 
     item_component = Item(use_function=use_function, power=power, game_map=game_map, targeting_message=Message(
         targeting_message, text_color), radius=radius, targeting=targeting, maximum_range=maximum_range,
-                          damage_type=damage_type)
+                          damage_type=damage_type, stackable=stackable)
     item_to_return = Entity(x, y, aspect, color, name, render_order=RenderOrder.ITEM, item=item_component)
 
     return item_to_return
