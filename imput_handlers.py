@@ -161,7 +161,7 @@ def handle_level_up_menu(key):
         elif key_char == 'b':
             return {'level_up': 'str'}
         elif key_char == 'c':
-            return {'level_up': 'def'}
+            return {'level_up': 'dex'}
 
     return {}
 

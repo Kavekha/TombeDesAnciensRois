@@ -23,6 +23,8 @@ from random_utils import random_choice_from_dict, from_dungeon_level
 from map_objects.tile import Tile
 from map_objects.rectangle import Rect
 
+from data.data_monsters import generate_monster
+
 
 class GameMap:
     def __init__(self, width, height, version, dungeon_level=1):
@@ -97,15 +99,19 @@ class GameMap:
                                  render_order=RenderOrder.STAIRS, stairs=stairs_component)
             entities.append(down_stairs)
         else:
-            fighter_component = Fighter(hp=120, defense=8, power=32, xp=0)
+            ''' # before v15.
+            fighter_component = Fighter(hp=120, str=32, dex=16, defense=4, power=3, xp=0)
             ai_component = BasicMonster()
             death_component = Death(kill_final_boss)  # v14
 
             monster = Entity(center_of_last_room_x, center_of_last_room_y, 'K', libtcod.darker_amber, 'Ancient King', blocks=True,
                              render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
                              death=death_component)
-            entities.append(monster)
+            '''
 
+            # v15. Refacto monster. Test Data Monster.
+            monster = generate_monster('ancient_king_horde', center_of_last_room_x, center_of_last_room_y)
+            entities.append(monster)
 
     def create_room(self, room):
         for x in range(room.x1 + 1, room.x2):
@@ -127,15 +133,13 @@ class GameMap:
         # random nb of monsters
         max_monsters_per_room = from_dungeon_level([[2, 1], [3, 2], [4, 3], [5, 4], [6, 6], [7, 10]], self.dungeon_level)
         max_items_per_room = from_dungeon_level([[1, 1], [2, 3], [3, 6],[4, 10]], self.dungeon_level)
-        print('DEBUG : max monsters : {}'.format(max_monsters_per_room))
-        print('DEBUG : max items : {}'.format(max_items_per_room))
 
         number_of_monsters = randint(0, max_monsters_per_room)
         number_of_items = randint(0, max_items_per_room)
 
         monster_chances = {
-            'orc': from_dungeon_level([[80, 1], [70, 3], [60, 5], [50, 7], [30, 10]], self.dungeon_level),
-            'troll': from_dungeon_level([[15, 1], [30, 3],[60, 5]], self.dungeon_level),
+            'orloog': from_dungeon_level([[80, 1], [70, 3], [60, 5], [50, 7], [30, 10]], self.dungeon_level),
+            'troll': from_dungeon_level([[1, 1], [5, 2], [10, 3], [20, 4], [40, 5], [60, 6]], self.dungeon_level),
             'ogre': from_dungeon_level([[0, 1], [1, 3], [2, 5], [5, 6], [10, 7], [15, 8], [20, 9], [25, 10]],
                                        self.dungeon_level)
         }
@@ -155,40 +159,19 @@ class GameMap:
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 monster_choice = random_choice_from_dict(monster_chances)
-                print('DEBUG : monster_choice from game map = {}'.format(monster_choice))
-                print('monster_choice == orc? reponse : {}, alors que monster choice = {}'.format(monster_choice == 'orc', monster_choice))
 
-                print('Type of monster_choice = {} et contient {}'.format(type(monster_choice), monster_choice))
-
-                if monster_choice == 'orc':
-                    print('Ogre was chosen')
-                    fighter_component = Fighter(hp=20, defense=0, power=4, xp=25)
-                    ai_component = BasicMonster()
-                    death_component = Death(kill_monster)   #v14
-
-                    monster = Entity(x, y, 'o', libtcod.desaturated_green, 'Orc', blocks=True,
-                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
-                                     death=death_component)
+                if monster_choice == 'orloog':
+                    print('Orloog was chosen')
+                    monster = generate_monster('orloog', x, y)
 
                 if monster_choice == 'troll':
                     print('Troll was chosen')
-                    fighter_component = Fighter(hp=30, defense=2, power=8, xp=100)
-                    ai_component = BasicMonster()
-                    death_component = Death(kill_monster)   #v14
-
-                    monster = Entity(x, y, 'T', libtcod.darker_green, 'Troll', blocks=True,
-                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
-                                     death=death_component)
+                    monster = generate_monster('troll', x, y)
 
                 if monster_choice == 'ogre':
                     print('Ogre was chosen')
-                    fighter_component = Fighter(hp=60, defense=4, power=16, xp=400)
-                    ai_component = BasicMonster()
-                    death_component = Death(kill_monster)   #v14
+                    monster = generate_monster('ogre', x, y)
 
-                    monster = Entity(x, y, 'O', libtcod.darker_crimson, 'Ogre', blocks=True,
-                                     render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component,
-                                     death=death_component)
                 else:
                     print('WARNING : "Else" was used, instead of {} in monster choice'.format(monster_choice))
 
