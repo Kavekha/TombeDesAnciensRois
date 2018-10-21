@@ -7,12 +7,14 @@ from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message
 from game_states import GameStates
-from imput_handlers import handle_keys, handle_mouse, handle_main_menu
+from imput_handlers import handle_keys, handle_mouse, handle_main_menu, handle_score_bill_menu
+
 from loader_functions.initialize_new_game import get_constants, get_game_variables
 from loader_functions.data_loaders import save_game, load_game
-from loader_functions.scores_loader import create_score_bill
+from loader_functions.scores_loader import create_score_bill, read_score_bill
+
 from render_functions import clear_all, render_all
-from menus import main_menu, message_box
+from menus import main_menu, message_box, score_bill_menu
 
 
 def main():
@@ -37,8 +39,10 @@ def main_screen(constants):
 
     show_main_menu = True
     show_load_error_message = False
+    show_score_bill = False
 
     main_menu_background_image = libtcod.image_load('menu_background.png')
+    score_list = read_score_bill()
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()
@@ -59,6 +63,7 @@ def main_screen(constants):
 
             new_game = action.get('new_game')
             load_saved_game = action.get('load_game')
+            score_bill = action.get('score_bill')
             exit_game = action.get('exit')
 
             if show_load_error_message and (new_game or load_saved_game or exit_game):
@@ -75,8 +80,30 @@ def main_screen(constants):
                     show_main_menu = False
                 except FileNotFoundError:
                     show_load_error_message = True
+
+            # v14
+            elif score_bill:
+                show_main_menu = False
+                show_score_bill = True
+
             elif exit_game:
                 break
+
+        # v14.
+        elif show_score_bill:
+            # show score bill.
+            score_bill_menu(main_menu_background_image, constants['screen_width'],
+                            constants['screen_height'], score_list)
+
+            libtcod.console_flush()
+
+            action = handle_score_bill_menu(key)
+            exit_score_bill = action.get('score_exit')
+
+            if exit_score_bill:
+                show_score_bill = False
+                show_main_menu = True
+
         else:
             libtcod.console_clear(con)
             play_game(player, entities, game_map, message_log, game_state, con, panel, constants)
@@ -184,14 +211,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if take_stairs and game_state == GameStates.PLAYERS_TURN:
             for entity in entities:
                 if entity.stairs and entity.x == player.x and entity.y == player.y:
-                    if game_map.dungeon_level >= 10:    # v14
-                        create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  #v14
-                        exit = True #v14, to test
-                    else:   #v14
-                        entities = game_map.next_floor(player, message_log, constants)
-                        fov_map = initialize_fov(game_map)
-                        fov_recompute = True
-                        libtcod.console_clear(con)
+                    entities = game_map.next_floor(player, message_log, constants)
+                    fov_map = initialize_fov(game_map)
+                    fov_recompute = True
+                    libtcod.console_clear(con)
 
                     break
             else:
@@ -351,7 +374,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         if game_state == GameStates.VICTORY:
             message_box(con, 'The Ancient King has been vanquished! Congratulations on your victory!!', 50,
                         constants['screen_width'], constants['screen_height'])
-            return True
+            create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  # v14
 
 
 if __name__ == '__main__':

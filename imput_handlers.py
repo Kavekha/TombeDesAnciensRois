@@ -118,14 +118,22 @@ def handle_main_menu(key):
     key_char = chr(key.c)
 
     if key_char == 'a':
-        print('DEBUG : new game - main')
         return {'new_game': True}
     elif key_char == 'b':
-        print('DEBUG : load game - main')
         return {'load_game': True}
-    elif key_char == 'c' or key.vk == libtcod.KEY_ESCAPE:
-        print('DEBUG : exit - main')
+    elif key_char == 'c':
+        return {'score_bill': True}  # v14
+    elif key_char == 'd' or key.vk == libtcod.KEY_ESCAPE:
         return {'exit': True}
+
+    return {}
+
+
+def handle_score_bill_menu(key):
+    key_char = chr(key.c)
+
+    if key_char == 'a' or key.vk == libtcod.KEY_ESCAPE:
+        return {'score_exit': True}
 
     return {}
 
