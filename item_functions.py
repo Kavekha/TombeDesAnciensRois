@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 
 from game_messages import Message
-from components.ai import ConfusedMonster, BrainStates
+from components.ai import ModifiedMindMonster, BrainStates
 
 
 def heal(*args, **kwargs):
@@ -9,8 +9,6 @@ def heal(*args, **kwargs):
     amount = kwargs.get('power')
 
     results = []
-
-    print('DEBUG : Caster du Heal Parchemin est ', entity)
 
     if entity.fighter.hp == entity.fighter.max_hp:
         results.append({'consumed': False, 'message': Message('You are already at full health.', libtcod.yellow)})
@@ -110,7 +108,7 @@ def cast_confuse(*args, **kwargs):
                     libtcod.light_green)})
             # before v15, no if / else.
             else:
-                confused_ai = ConfusedMonster(entity.ai, 10)
+                confused_ai = ModifiedMindMonster(entity.ai, 10)
 
                 confused_ai.owner = entity
                 entity.ai = confused_ai

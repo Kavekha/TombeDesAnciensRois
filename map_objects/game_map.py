@@ -44,7 +44,7 @@ class GameMap:
         dungeon_to_build = 'the_necropole'
 
         dungeon_name, nb_floors, room_min_size, room_max_size, \
-        max_room = generate_dungeon_building_specs(dungeon_to_build)
+        max_room, monster_boss = generate_dungeon_building_specs(dungeon_to_build)
 
         self.name = dungeon_name
 
@@ -108,7 +108,7 @@ class GameMap:
 
         else:
             # v15. Refacto monster. Test Data Monster.
-            monster = generate_monster('ancient_king_horde', center_of_last_room_x, center_of_last_room_y)
+            monster = generate_monster(monster_boss, center_of_last_room_x, center_of_last_room_y)
             entities.append(monster)
 
     def create_room(self, room):
@@ -129,7 +129,7 @@ class GameMap:
 
     def place_entities(self, room, entities, dungeon_to_build):
         # v15 configurable dungeons.
-        monster_boss, max_monsters_per_room_by_level, min_monsters_per_room_by_level, \
+        max_monsters_per_room_by_level, min_monsters_per_room_by_level, \
         monster_list_from_config = generate_dungeon_monsters_specs(dungeon_to_build)
 
         max_items_per_room_by_level, min_items_per_room_by_level, max_number_of_weapons_by_level, \

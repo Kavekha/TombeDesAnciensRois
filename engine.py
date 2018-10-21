@@ -2,9 +2,8 @@ import libtcodpy as libtcod
 
 from death_functions import kill_monster, kill_player
 from components.death import Death
-from components.spellbook import TargetType
 
-from spell_functions import get_closest_entities
+from systems.targeting import spell_targeting_resolution
 
 from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
@@ -351,85 +350,14 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
         # v16 spellbook
         if game_state == GameStates.SPELL_TARGETING:
 
-            # targeting without target_mode, not normal.
-            if not target_mode:
-                print('ERROR : Spell targeting without target mode.')
+            print('DEBUG : game state spell targeting')
 
-            elif target_mode == TargetType.CLOSEST_ENTITIES:
-                # nearest entitites.
-                maximum_range = (targeting_obj.spell.power + int(player.fighter.int / 2))
+            # refacto.
+            spell_use_results = spell_targeting_resolution(targeting_obj, target_mode, player, game_map, fov_map, entities, action, left_click, right_click)
 
-                target_entity = get_closest_entities(maximum_range, player, entities, fov_map)
+            print('Spell use result is : ', spell_use_results)
 
-                if target_entity:
-                    spell_use_results = player.spellbook.cast_spell(targeting_obj,
-                                                        mana_cost=targeting_obj.spell.mana_cost,
-                                                        entities=entities, target_entity=target_entity,
-                                                        to_cast=True, game_map=game_map)
-
-                    player_turn_results.extend(spell_use_results)
-
-                else:
-                    print('DEBUG : targeting list empty')
-                    message_log.add_message(Message('There is no enemy around you can strike.',
-                                                    libtcod.yellow))
-                    player_turn_results.append({'targeting_cancelled': True})
-
-            else:
-                if left_click:
-                    target_x, target_y = left_click
-
-                    #in anycase, should be in fov.
-                    if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
-                        print('DEBUG : Pas dans la fov')
-                        message_log.add_message(Message('You cannot target something outside your field of view.',
-                                                        libtcod.yellow))
-
-                    else:
-                        target_entity = None
-                        print('DEBUG : Dans le champ de vision')
-                        # other target mode are ok, as soon as in fov.
-                        if target_mode in (TargetType.ALLIED, TargetType.ENEMY):
-                            print('DEBUG : target mode ALLY ENEMY')
-                            # Is it a fighter entity?
-                            for entity in entities:
-                                if entity.x == target_x and entity.y == target_y and entity.fighter:
-                                    target_entity = entity
-                                    break
-
-                            else:
-                                print('DEBUG : fighter pas trouvé.')
-                                message_log.add_message(Message('You have to target someone.', libtcod.yellow))
-                                # to check if needed
-                                spell_use_results = {'targeting_cancelled': True}
-
-                            spell_use_results = player.spellbook.cast_spell(targeting_obj,
-                                                                            mana_cost=targeting_obj.spell.mana_cost,
-                                                                            entities=entities, target_x=target_x,
-                                                                            target_y=target_y,
-                                                                            target_entity=target_entity,
-                                                                            to_cast=True, game_map=game_map)
-
-                            player_turn_results.extend(spell_use_results)
-
-                        elif target_mode == TargetType.TILE:
-                            for entity in entities:
-                                if entity.x == target_x and entity.y == target_y:
-                                    message_log.add_message(Message('There is someone there, no action can be done '
-                                                                    'on this tile.', libtcod.yellow))
-                                    player_turn_results.append({'targeting_cancelled': True})
-                                    break
-                            else:
-                                spell_use_results = player.spellbook.cast_spell(targeting_obj,
-                                                                        mana_cost=targeting_obj.spell.mana_cost,
-                                                                        entities=entities, target_x=target_x,
-                                                                        target_y=target_y, target_entity=target_entity,
-                                                                        to_cast=True, game_map=game_map)
-
-                                player_turn_results.extend(spell_use_results)
-
-                elif right_click:
-                    player_turn_results.append({'targeting_cancelled': True})
+            player_turn_results.extend(spell_use_results)
 
         if game_state == GameStates.TARGETING:
             if left_click:
@@ -438,6 +366,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
                                                         target_x=target_x, target_y=target_y)
                 player_turn_results.extend(item_use_results)
+
             elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
 
@@ -511,8 +440,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 game_state = GameStates.ENEMY_TURN
 
             if mana_cost:
+                print('DEBUG : mana cost about to be paid')
                 player.fighter.mana -= mana_cost
                 game_state = GameStates.ENEMY_TURN
+                print('DEBUG mana cost paid, enemy turn')
 
             if item_dropped:
                 entities.append(item_dropped)
@@ -583,6 +514,32 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
             else:
                 game_state = GameStates.PLAYERS_TURN
+                # v16 ally
+                for entity in entities:
+                    if entity.ai and entity.ally:
+                        player_turn_results.extend(entity.ai.take_turn(player, fov_map, game_map, entities))
+
+                        '''
+                        for ally_turn_result in ally_turn_results:
+                            message = ally_turn_result.get('message')
+                            dead_entity = ally_turn_result.get('dead')
+                            xp = player_turn_result.get('xp')
+
+                            if message:
+                                message_log.add_message(message)
+
+                            if dead_entity:
+                                if dead_entity == player:
+                                    message, game_state = kill_player(dead_entity, game_state)
+                                else:
+                                    message = kill_monster(dead_entity, game_state)
+
+                                message_log.add_message(message)
+
+                                # v15 'or' to fix victory message not displayed, and player action possible.
+                                if game_state == GameStates.PLAYER_DEAD or game_state == GameStates.VICTORY:
+                                    break                                
+                        '''
 
         # v14 victory condition.
         if game_state == GameStates.VICTORY and not victory:

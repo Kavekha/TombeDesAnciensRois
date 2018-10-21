@@ -49,7 +49,7 @@ def get_dungeon_specs(dungeon_name):
                 'dark_wall': libtcod.Color(30, 40, 20),
                 'dark_ground': libtcod.Color(80, 90, 70),
                 'light_wall': libtcod.Color(120, 130, 110),
-                'light_ground': libtcod.Color(190, 200, 180)
+                'light_ground': libtcod.Color(170, 180, 160)
             },
             'monster_boss': 'ancient_king_necropole',
             'max_monsters_per_room_by_level': [[2, 1], [3, 2], [4, 3], [5, 4], [6, 6], [7, 8]],
@@ -89,8 +89,9 @@ def generate_dungeon_building_specs(dungeon_name):
     room_max_size = dungeon['room_max_size']
     room_min_size = dungeon['room_min_size']
     max_room = dungeon['max_room']
+    monster_boss = dungeon['monster_boss']
 
-    return dungeon_name, nb_floors, room_min_size, room_max_size, max_room
+    return dungeon_name, nb_floors, room_min_size, room_max_size, max_room, monster_boss
 
 
 def generate_dungeon_render_specs(dungeon_name):
@@ -104,12 +105,11 @@ def generate_dungeon_render_specs(dungeon_name):
 def generate_dungeon_monsters_specs(dungeon_name):
     dungeon = get_dungeon_specs(dungeon_name)
 
-    monster_boss = dungeon['monster_boss']
     max_monsters_per_room_by_level = dungeon['max_monsters_per_room_by_level']
     min_monsters_per_room_by_level = dungeon['min_monsters_per_room_by_level']
     monster_chances = dungeon['monster_chances']
 
-    return monster_boss, max_monsters_per_room_by_level, min_monsters_per_room_by_level, monster_chances
+    return max_monsters_per_room_by_level, min_monsters_per_room_by_level, monster_chances
 
 
 def generate_dungeon_items_specs(dungeon_name):

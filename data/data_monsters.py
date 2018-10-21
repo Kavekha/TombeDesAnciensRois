@@ -198,7 +198,20 @@ def get_monster_list(monster_name):
             'defense': 5,
             'resistance': 0,
             'xp': 0
-        }
+        },
+        'voleur': {
+            'name': 'Voleur',
+            'aspect': 'v',
+            'color': libtcod.dark_azure,
+            'death_function': kill_monster,
+            'ai': BasicMonster(),
+            'hp': 50,
+            'str': 5,
+            'dex': 8,
+            'defense': 0,
+            'resistance': 0,
+            'xp': 130
+        },
     }
 
     return monsters_list[monster_name]
