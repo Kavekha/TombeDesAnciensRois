@@ -86,7 +86,7 @@ class GameMap:
                 num_rooms += 1
 
         # condition add in v14.
-        if self.dungeon_level < 10:
+        if self.dungeon_level < 8:
             stairs_component = Stairs(self.dungeon_level + 1)
             down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', libtcod.white, 'Stairs',
                                  render_order=RenderOrder.STAIRS, stairs=stairs_component)
@@ -115,26 +115,25 @@ class GameMap:
 
     def place_entities(self, room, entities):
         # random nb of monsters
-        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 2], [4, 3], [5, 4], [6, 6], [7, 10]], self.dungeon_level)
-        max_items_per_room = from_dungeon_level([[1, 1], [2, 3], [3, 6],[4, 10]], self.dungeon_level)
+        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 2], [4, 3], [5, 4], [6, 6], [7, 8]], self.dungeon_level)
+        max_items_per_room = from_dungeon_level([[1, 1], [2, 3], [3, 5], [4, 7]], self.dungeon_level)
 
         number_of_monsters = randint(0, max_monsters_per_room)
         number_of_items = randint(0, max_items_per_room)
 
         monster_chances = {
-            'orloog': from_dungeon_level([[80, 1], [70, 3], [60, 5], [50, 7], [30, 10]], self.dungeon_level),
-            'troll': from_dungeon_level([[2, 1], [10, 2], [20, 3], [30, 5], [40, 7], [60, 8]], self.dungeon_level),
-            'ogre': from_dungeon_level([[0, 1], [1, 3], [2, 5], [5, 6], [10, 7], [15, 8], [20, 9], [25, 10]],
-                                       self.dungeon_level)
+            'orloog': from_dungeon_level([[80, 1], [70, 3], [60, 4], [50, 6], [40, 8]], self.dungeon_level),
+            'troll': from_dungeon_level([[2, 1], [10, 2], [20, 3], [30, 4], [40, 6], [60, 8]], self.dungeon_level),
+            'ogre': from_dungeon_level([[0, 2], [1, 3], [2, 4], [5, 5], [10, 6], [15, 8]], self.dungeon_level)
         }
 
         item_chances = {
             'healing_potion': 35,
-            'confusion_scroll': from_dungeon_level([[10, 1], [25,3]], self.dungeon_level),
+            'confusion_scroll': from_dungeon_level([[10, 1], [25, 3]], self.dungeon_level),
             'fireball_scroll': from_dungeon_level([[5, 1], [10, 3], [25, 6]], self.dungeon_level),
             'lightning_scroll': from_dungeon_level([[10, 2], [15, 5]], self.dungeon_level),
             'sword': from_dungeon_level([[1, 4]], self.dungeon_level),
-            'shield': from_dungeon_level([[15, 8]], self.dungeon_level)
+            'shield': from_dungeon_level([[15, 6]], self.dungeon_level)
         }
 
         for i in range(number_of_monsters):

@@ -19,10 +19,20 @@ class Inventory:
         else:
             results.append({
                 'item_added': item,
-                'message': Message('You pick up the {}!'.format(item.name), libtcod.blue)
+                'message': Message('You pick up {} {}!'.format(str(item.item.stack), item.name), libtcod.blue)
             })
 
-            self.items.append(item)
+            # v15 stack item.
+            for i in self.items:
+                print('DEBUG : item is {}, compared to {}', i, item)
+                # v15 : meme fonction, ignore les stats differentes et autres criteres uniques (plus tard).
+                if i.item.use_function == item.item.use_function:
+                    print('DEBUG : item found, stack created!')
+                    i.item.stack += 1
+                    break
+            else:
+                print('DEBUG : item not found, added.')
+                self.items.append(item)
 
         return results
 
@@ -53,8 +63,15 @@ class Inventory:
 
         return results
 
-    def remove_item(self, item):
-        self.items.remove(item)
+    def remove_item(self, item, nb_to_remove=1):
+        # v15 : stack
+        if nb_to_remove > item.item.stack:
+            nb_to_remove = item.item.stack
+
+        if item.item.stack > nb_to_remove:
+            item.item.stack -= nb_to_remove
+        else:
+            self.items.remove(item)
 
     def drop_item(self, item):
         results = []
@@ -62,10 +79,20 @@ class Inventory:
         if self.owner.equipment.main_hand == item or self.owner.equipment.off_hand == item:
             self.owner.equipment.toggle_equip(item)
 
+        # v15 : stack. Dirty. If dropped with 2 stacks, the item will be on the floor AND in inventory.
+        # Dropping the second stack will teleport the one already dropped.
+        # for now, all the stack are dropped.
+
         item.x = self.owner.x
         item.y = self.owner.y
 
-        self.remove_item(item)
-        results.append({'item_dropped': item, 'message': Message('You drpped the {}'.format(item.name), libtcod.yellow)})
+        # v15 stack system
+        if item.item.stack > 1:
+            results.append({'item_dropped': item, 'message': Message('You dropped {} {}'.format(str(item.item.stack), item.name), libtcod.yellow)})
+        else:
+            results.append({'item_dropped': item, 'message': Message('You dropped the {}'.format(item.name), libtcod.yellow)})
+
+        # v15 : all to drop the full stack.
+        self.remove_item(item, nb_to_remove=999)
 
         return results

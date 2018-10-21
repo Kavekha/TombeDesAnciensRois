@@ -8,14 +8,15 @@ from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message
 from game_states import GameStates
 from imput_handlers import handle_keys, handle_mouse, handle_main_menu, handle_score_bill_menu, \
-    handle_character_creation_menu
+    handle_character_creation_menu, handle_load_menu
 
 from loader_functions.initialize_new_game import get_constants, get_game_variables
-from loader_functions.data_loaders import save_game, load_game
+from loader_functions.data_loaders import save_game, load_game, get_saved_games
+
 from loader_functions.scores_loader import create_score_bill
 
 from render_functions import clear_all, render_all
-from menus import main_menu, message_box, score_bill_menu, character_creation_menu
+from menus import main_menu, message_box, score_bill_menu, character_creation_menu, menu
 
 
 def main():
@@ -42,6 +43,7 @@ def main_screen(constants):
     show_load_error_message = False
     show_score_bill = False
     show_creation_menu = False
+    show_load_menu = False
 
     character_name = str("")
     main_menu_background_image = libtcod.image_load('menu_background.png')
@@ -81,11 +83,22 @@ def main_screen(constants):
                 show_creation_menu = True
 
             elif load_saved_game:
-                try:
-                    player, entities, game_map, message_log, game_state = load_game()
-                    show_main_menu = False
-                except FileNotFoundError:
-                    show_load_error_message = True
+                # v15
+                if show_load_menu == False:
+                    number_of_games = get_saved_games()
+                    if number_of_games == []:
+                        show_load_error_message = True
+                    else:
+                        show_main_menu = False
+                        show_load_menu = True
+
+                    '''
+                    try:
+                        player, entities, game_map, message_log, game_state = load_game()
+                        show_main_menu = False
+                    except FileNotFoundError:
+                        show_load_error_message = True
+                    '''
 
             # v14
             elif score_bill:
@@ -94,6 +107,38 @@ def main_screen(constants):
 
             elif exit_game:
                 break
+
+        # v15
+        elif show_load_menu:
+            number_of_games = get_saved_games()
+            print('INFO : number of games : ', number_of_games)
+            header = 'Choose your save :'
+            menu(con, header, number_of_games, int(constants['screen_width'] / 2), constants['screen_width'],
+                 constants['screen_height'])
+
+            libtcod.console_flush()
+
+            action = handle_load_menu(key)
+
+            load_chosen = None
+            load_chosen = action.get('load_chosen')
+            load_exit = action.get('load_exit')
+
+            if load_exit:
+                show_main_menu = True
+                show_load_menu = False
+
+            if load_chosen != None:
+                try:
+                    save_to_load = number_of_games[load_chosen]
+                    player, entities, game_map, message_log, game_state = load_game(save_to_load)
+                    show_main_menu = False
+                    show_creation_menu = False
+                    show_score_bill = False
+                    show_load_menu = False
+
+                except FileNotFoundError:
+                    show_load_error_message = True
 
         # v14
         elif show_creation_menu:
