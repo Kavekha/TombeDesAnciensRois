@@ -31,4 +31,7 @@ def kill_final_boss(monster, game_state):
     death_message = Message('The {} has been vanquished! The threath is over! VICTORY!'.
                             format(monster.name.capitalize(), libtcod.lightest_yellow))
 
+    monster.char = '%'
+    monster.color = libtcod.dark_red
+
     return death_message, GameStates.VICTORY

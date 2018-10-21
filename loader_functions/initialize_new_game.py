@@ -21,7 +21,7 @@ from render_functions import RenderOrder
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.14b'
+    version = '0.14c'
     screen_width = 80
     screen_height = 50
 

@@ -11,7 +11,7 @@ from imput_handlers import handle_keys, handle_mouse, handle_main_menu, handle_s
 
 from loader_functions.initialize_new_game import get_constants, get_game_variables
 from loader_functions.data_loaders import save_game, load_game
-from loader_functions.scores_loader import create_score_bill, read_score_bill
+from loader_functions.scores_loader import create_score_bill
 
 from render_functions import clear_all, render_all
 from menus import main_menu, message_box, score_bill_menu
@@ -42,7 +42,6 @@ def main_screen(constants):
     show_score_bill = False
 
     main_menu_background_image = libtcod.image_load('menu_background.png')
-    score_list = read_score_bill()
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()
@@ -65,6 +64,10 @@ def main_screen(constants):
             load_saved_game = action.get('load_game')
             score_bill = action.get('score_bill')
             exit_game = action.get('exit')
+            fullscreen = action.get('fullscreen')
+
+            if fullscreen:
+                libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
             if show_load_error_message and (new_game or load_saved_game or exit_game):
                 show_load_error_message = False
@@ -93,7 +96,7 @@ def main_screen(constants):
         elif show_score_bill:
             # show score bill.
             score_bill_menu(main_menu_background_image, constants['screen_width'],
-                            constants['screen_height'], score_list)
+                            constants['screen_height'])
 
             libtcod.console_flush()
 
@@ -119,8 +122,10 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
-    game_state = GameStates.PLAYERS_TURN
-    previous_game_state = game_state
+    if game_state != GameStates.VICTORY and game_state != GameStates.PLAYER_DEAD:    # v14 Fix immortal at reload dead
+        # before v14, those two were inverted.
+        previous_game_state = game_state
+        game_state = GameStates.PLAYERS_TURN
 
     targeting_item = None
 
@@ -252,7 +257,6 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player_turn_results.append({'targeting_cancelled': True})
             else:
                 save_game(player, entities, game_map, message_log, game_state)
-                # main_screen(constants)
                 return True
 
         if fullscreen:
@@ -372,9 +376,12 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
 
         # v14 victory condition.
         if game_state == GameStates.VICTORY:
-            message_box(con, 'The Ancient King has been vanquished! Congratulations on your victory!!', 50,
-                        constants['screen_width'], constants['screen_height'])
-            create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  # v14
+            score_created = False
+            if not score_created:
+                create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  # v14
+                # message_log.add_message(Message('The Ancient King has been vanquished! Congratulations on your '
+                                                # 'victory!!', libtcod.yellow))
+                score_created = True
 
 
 if __name__ == '__main__':
