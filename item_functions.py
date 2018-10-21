@@ -5,9 +5,11 @@ from components.ai import ConfusedMonster
 
 def heal(*args, **kwargs):
     entity = args[0]
-    amount = kwargs.get('amount')
+    amount = kwargs.get('power')
 
     results = []
+
+    print('DEBUG : Caster du Heal Parchemin est ', entity)
 
     if entity.fighter.hp == entity.fighter.max_hp:
         results.append({'consumed': False, 'message': Message('You are already at full health.', libtcod.yellow)})
@@ -25,6 +27,7 @@ def cast_lightning(*args, **kwargs):
     damage = kwargs.get('damage')
     maximum_range = kwargs.get('maximum_range')
     game_map = kwargs.get('game_map')
+    damage_type = kwargs.get('damage_type')
 
     results = []
 
@@ -42,7 +45,7 @@ def cast_lightning(*args, **kwargs):
     if target:
         results.append({'consumed': True, 'target': target, 'message': Message(
             'A lightning bolt strikes the {} with a loud thunder! The damage is {}.'.format(target.name, damage))})
-        results.extend(target.fighter.take_damage(damage, caster, game_map))
+        results.extend(target.fighter.take_damage(damage, caster, game_map, damage_type))
     else:
         results.append({'consumed': False, 'target': None, 'message': Message('No enemy is close enough to strike.',
                                                                               libtcod.red)})
@@ -53,11 +56,12 @@ def cast_fireball(*args, **kwargs):
     caster = args[0]
     entities = kwargs.get('entities')
     fov_map = kwargs.get('fov_map')
-    damage = kwargs.get('damage')
+    damage = kwargs.get('power')
     radius = kwargs.get('radius')
     target_x = kwargs.get('target_x')
     target_y = kwargs.get('target_y')
     game_map = kwargs.get('game_map')
+    damage_type = kwargs.get('damage_type')
 
     results = []
 
@@ -70,7 +74,7 @@ def cast_fireball(*args, **kwargs):
     for entity in entities:
         if entity.distance(target_x, target_y) <= radius and entity.fighter:
             results.append({'message': Message('The {} getsburned for {} hit points.'.format(entity.name, damage), libtcod.orange)})
-            results.extend(entity.fighter.take_damage(damage, caster, game_map))
+            results.extend(entity.fighter.take_damage(damage, caster, game_map, damage_type))
 
     return results
 
