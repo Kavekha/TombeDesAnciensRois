@@ -1,5 +1,7 @@
 import libtcodpy as libtcod
 
+from loader_functions.scores_loader import read_score_bill
+
 
 def menu(con, header, options, width, screen_width, screen_height):
     if len(options) > 26:
@@ -60,7 +62,9 @@ def main_menu(con, background_image, screen_width, screen_height, version):
 
 
 # v14
-def score_bill_menu(background_image, screen_width, screen_height, score_list):
+def score_bill_menu(background_image, screen_width, screen_height):
+
+    score_list = read_score_bill()
 
     libtcod.image_blit_2x(background_image, 0, 0, 0)
 
@@ -69,8 +73,12 @@ def score_bill_menu(background_image, screen_width, screen_height, score_list):
                              libtcod.CENTER, 'BEST SCORES')
 
     y = 0
-    for i in score_list:
-        libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 4) + y, libtcod.BKGND_NONE, libtcod.CENTER, i)
+    for line in score_list:
+        row = line.split(',')
+        x = 0
+        for info in row:
+            libtcod.console_print_ex(0, int(screen_width / 10) + x, int(screen_height / 4) + y, libtcod.BKGND_NONE, libtcod.CENTER, info)
+            x += 13
         if y == 0:
             y += 2
         else:
@@ -89,6 +97,7 @@ def level_up_menu(con, header, player, menu_width, screen_width, screen_height):
 
 
 def character_screen(player, character_screen_width, character_screen_height, screen_width, screen_height):
+
     window = libtcod.console_new(character_screen_width, character_screen_height)
 
     libtcod.console_set_default_foreground(window, libtcod.white)
@@ -116,3 +125,28 @@ def character_screen(player, character_screen_width, character_screen_height, sc
 
 def message_box(con, header, width, screen_width, screen_height):
     menu(con, header, [], width, screen_width, screen_height)
+
+
+# v14.
+def victory_screen(character_screen_width, character_screen_height, screen_width, screen_height):
+
+    window = libtcod.console_new(character_screen_width, character_screen_height)
+
+    libtcod.console_set_default_foreground(window, libtcod.white)
+
+    window = libtcod.console_new(character_screen_width, character_screen_height)
+
+    libtcod.console_set_default_foreground(window, libtcod.white)
+
+    libtcod.console_print_rect_ex(window, 0, 4, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, 'VICTORY !!')
+    libtcod.console_print_rect_ex(window, 0, 5, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, 'The Ancient King of the Horde is dead!')
+
+    libtcod.console_print_rect_ex(window, 0, 9, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
+                                  libtcod.LEFT, 'Press ESC to quit this game.')
+
+    x = screen_width // 2 - character_screen_width // 2
+    y = screen_height // 2 - character_screen_height // 2
+
+    libtcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)

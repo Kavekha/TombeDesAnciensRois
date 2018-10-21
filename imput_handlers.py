@@ -16,6 +16,8 @@ def handle_keys(key, game_state):
         return handle_level_up_menu(key)
     elif game_state == GameStates.CHARACTER_SCREEN:
         return handle_character_screen(key)
+    elif game_state == GameStates.VICTORY:
+        return handle_victory_screen_keys(key)
     return {}
 
 
@@ -31,6 +33,17 @@ def handle_player_dead_keys(key):
 
     if key_char == 'i':
         return {'show_inventory': True}
+
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        return {'fullscreen': True}
+    elif key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
+
+    return {}
+
+
+def handle_victory_screen_keys(key):
+    key_char = chr(key.c)
 
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         return {'fullscreen': True}
@@ -125,7 +138,8 @@ def handle_main_menu(key):
         return {'score_bill': True}  # v14
     elif key_char == 'd' or key.vk == libtcod.KEY_ESCAPE:
         return {'exit': True}
-
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        return {'fullscreen': True}
     return {}
 
 
