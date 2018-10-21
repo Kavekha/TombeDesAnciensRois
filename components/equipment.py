@@ -7,6 +7,30 @@ class Equipment:
         self.off_hand = off_hand
 
     @property
+    def str_bonus(self):
+        bonus = 0
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.str_bonus
+
+        if self.off_hand and self.off_hand.equippable:
+            bonus += self.off_hand.equippable.str_bonus
+
+        return bonus
+
+    @property
+    def dex_bonus(self):
+        bonus = 0
+
+        if self.main_hand and self.main_hand.equippable:
+            bonus += self.main_hand.equippable.dex_bonus
+
+        if self.off_hand and self.off_hand.equippable:
+            bonus += self.off_hand.equippable.dex_bonus
+
+        return bonus
+
+    @property
     def max_hp_bonus(self):
         bonus = 0
 

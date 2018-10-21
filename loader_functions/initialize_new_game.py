@@ -21,7 +21,7 @@ from render_functions import RenderOrder
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.14d'
+    version = '0.15'
     screen_width = 80
     screen_height = 50
 
@@ -87,7 +87,7 @@ def get_constants():
 
 
 def get_game_variables(constants):
-    fighter_component = Fighter(hp=100, defense=1, power=4)
+    fighter_component = Fighter(hp=100, str=4, dex=2)
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()

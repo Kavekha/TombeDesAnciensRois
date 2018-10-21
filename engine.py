@@ -263,9 +263,9 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 player.fighter.base_max_hp += 20
                 player.fighter.hp += 20
             if level_up == 'str':
-                player.fighter.base_power += 1
-            if level_up == 'def':
-                player.fighter.base_defense += 1
+                player.fighter.base_str += 1
+            if level_up == 'dex':
+                player.fighter.base_dex += 1
 
             game_state = previous_game_state
 
