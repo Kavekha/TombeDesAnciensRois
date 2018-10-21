@@ -17,8 +17,11 @@ from map_objects.rectangle import Rect
 from data.data_monsters import generate_monster
 from data.data_items import generate_item
 from data.data_weapons import generate_weapon
+from data.data_dungeons import generate_dungeon_building_specs, generate_dungeon_monsters_specs, \
+    generate_dungeon_items_specs
 
 
+# v15 Refacto.
 class GameMap:
     def __init__(self, width, height, version, dungeon_level=1):
         self.width = width
@@ -34,6 +37,13 @@ class GameMap:
         return tiles
 
     def make_map(self, max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities):
+
+        # v15 : config dungeon.
+        dungeon_to_build = 'the_pit'
+
+        dungeon_name, nb_floors, room_min_size, room_max_size, max_room, dark_wall, dark_ground, light_wall, \
+        light_ground = generate_dungeon_building_specs(dungeon_to_build)
+
         rooms = []
         num_rooms = 0
 
@@ -80,7 +90,7 @@ class GameMap:
                         self.create_v_tunnel(prev_y, new_y, prev_x)
                         self.create_h_tunnel(prev_x, new_x, new_y)
 
-                self.place_entities(new_room, entities)
+                self.place_entities(new_room, entities, dungeon_to_build)
                 # append the new room to the list
                 rooms.append(new_room)
                 num_rooms += 1
@@ -113,30 +123,30 @@ class GameMap:
             self.tiles[x][y].blocked = False
             self.tiles[x][y].block_sight = False
 
-    def place_entities(self, room, entities):
+    def place_entities(self, room, entities, dungeon_to_build):
+        # v15 configurable dungeons.
+        monster_boss, max_monsters_per_room_by_level, min_monsters_per_room_by_level, \
+        monster_list_from_config = generate_dungeon_monsters_specs(dungeon_to_build)
+
+        max_items_per_room_by_level, min_items_per_room_by_level, \
+        item_list_from_config = generate_dungeon_items_specs(dungeon_to_build)
+
+
         # random nb of monsters
-        max_monsters_per_room = from_dungeon_level([[2, 1], [3, 2], [4, 3], [5, 4], [6, 6], [7, 8]], self.dungeon_level)
-        max_items_per_room = from_dungeon_level([[1, 1], [2, 3], [3, 5], [4, 7]], self.dungeon_level)
+        max_monsters_per_room = from_dungeon_level(max_monsters_per_room_by_level, self.dungeon_level)
+        max_items_per_room = from_dungeon_level(max_items_per_room_by_level, self.dungeon_level)
 
         number_of_monsters = randint(0, max_monsters_per_room)
         number_of_items = randint(0, max_items_per_room)
 
-        monster_chances = {
-            'orloog': from_dungeon_level([[80, 1], [70, 3], [60, 4], [50, 6], [40, 8]], self.dungeon_level),
-            'rat': from_dungeon_level([[10, 1], [20, 2], [30, 4], [40, 6], [50, 8]], self.dungeon_level),
-            'goblin': from_dungeon_level([[5, 1], [10, 3], [20, 5], [30, 6], [40, 8]], self.dungeon_level),
-            'troll': from_dungeon_level([[2, 1], [10, 2], [20, 3], [30, 4], [40, 6], [50, 8]], self.dungeon_level),
-            'ogre': from_dungeon_level([[0, 2], [1, 3], [2, 4], [5, 5], [10, 6], [15, 8]], self.dungeon_level)
-        }
+        # v15 config dungeon.
+        monster_chances = {}
+        for i in monster_list_from_config:
+            monster_chances[i] = from_dungeon_level(monster_list_from_config[i], self.dungeon_level)
 
-        item_chances = {
-            'healing_potion': 35,
-            'confusion_scroll': from_dungeon_level([[10, 1], [25, 3]], self.dungeon_level),
-            'fireball_scroll': from_dungeon_level([[5, 1], [10, 3], [25, 6]], self.dungeon_level),
-            'lightning_scroll': from_dungeon_level([[10, 2], [15, 5]], self.dungeon_level),
-            'sword': from_dungeon_level([[1, 4]], self.dungeon_level),
-            'shield': from_dungeon_level([[15, 6]], self.dungeon_level)
-        }
+        item_chances = {}
+        for i in item_list_from_config:
+            item_chances[i] = from_dungeon_level(item_list_from_config[i], self.dungeon_level)
 
         for i in range(number_of_monsters):
             x = randint(room.x1 + 1, room.x2 - 1)
@@ -145,6 +155,10 @@ class GameMap:
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 monster_choice = random_choice_from_dict(monster_chances)
 
+                # v15 generate dungeon from config
+                monster = generate_monster(monster_choice, x, y)
+                print('INFO : chosen monster was {}, created was {}'.format(monster_choice, monster.name))
+                '''
                 if monster_choice == 'rat':
                     print('Rat was chosen')
                     monster = generate_monster('rat', x, y)
@@ -167,6 +181,7 @@ class GameMap:
 
                 else:
                     print('WARNING : "Else" was used, instead of {} in monster choice'.format(monster_choice))
+                '''
 
                 entities.append(monster)
 
@@ -177,6 +192,11 @@ class GameMap:
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 item_choice = random_choice_from_dict(item_chances)
 
+                # v15 generate item from config dungeon
+                item = generate_item(item_choice, x, y, self)
+                print('INFO : item demandé {}, item obtenu {}'.format(item_choice, item.name))
+
+                '''
                 if item_choice == 'healing_potion':
                     item = generate_item('healing_potion', x, y, self)
 
@@ -198,6 +218,7 @@ class GameMap:
                 else:
                     item = Entity(x, y, 'x', libtcod.light_gray, 'item choice out of range',
                                   render_order=RenderOrder.ITEM)
+                '''
 
                 entities.append(item)
 

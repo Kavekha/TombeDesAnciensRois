@@ -22,7 +22,7 @@ from data.data_items import generate_item
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.15d'
+    version = '0.15e'
     screen_width = 80
     screen_height = 50
 
