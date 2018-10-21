@@ -412,9 +412,7 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             score_created = False
             if not score_created:
                 create_score_bill(player, game_map.dungeon_level, 'VICTORY', game_map.version)  # v14
-                # message_log.add_message(Message('The Ancient King has been vanquished! Congratulations on your '
-                                                # 'victory!!', libtcod.yellow))
-                score_created = True
+                game_state = GameStates.PLAYER_DEAD
 
 
 if __name__ == '__main__':
