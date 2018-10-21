@@ -118,7 +118,7 @@ def character_screen(player, character_screen_width, character_screen_height, sc
     libtcod.console_print_rect_ex(window, 0, 9, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
                                   libtcod.LEFT, 'Dexterity: {}'.format(player.fighter.dex))
     libtcod.console_print_rect_ex(window, 0, 11, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Attack : {}'.format(player.fighter.power))
+                                  libtcod.LEFT, 'Resistance : {}'.format(player.fighter.resistance))
     libtcod.console_print_rect_ex(window, 0, 12, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
                                   libtcod.LEFT, 'Defense : {}'.format(player.fighter.defense))
 

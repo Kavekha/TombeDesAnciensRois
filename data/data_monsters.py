@@ -22,10 +22,11 @@ Data structure for monster.
         'str': 32,
         'dex': 16,
         'defense': 4,
-        'power': 3,
+        'resistance': 3,
         'xp': 0
      }
 '''
+
 
 def get_monster_list(monster_name):
     monsters_list = {
@@ -36,10 +37,10 @@ def get_monster_list(monster_name):
             'death_function': kill_final_boss,
             'ai': BasicMonster(),
             'hp': 120,
-            'str': 32,
+            'str': 40,
             'dex': 16,
             'defense': 4,
-            'power': 3,
+            'resistance': 0,
             'xp': 0
          },
         'orloog': {
@@ -49,11 +50,11 @@ def get_monster_list(monster_name):
             'death_function': kill_monster,
             'ai': BasicMonster(),
             'hp': 15,
-            'str': 4,
-            'dex': 1,
+            'str': 5,
+            'dex': 2,
             'defense': 0,
-            'power': 0,
-            'xp': 15
+            'resistance': 0,
+            'xp': 21
         },
         'troll': {
             'name': 'Troll',
@@ -62,11 +63,11 @@ def get_monster_list(monster_name):
             'death_function': kill_monster,
             'ai': BasicMonster(),
             'hp': 30,
-            'str': 8,
-            'dex': 2,
+            'str': 10,
+            'dex': 4,
             'defense': 1,
-            'power': 1,
-            'xp': 72
+            'resistance': 0,
+            'xp': 90
         },
         'ogre': {
             'name': 'Ogre',
@@ -75,11 +76,11 @@ def get_monster_list(monster_name):
             'death_function': kill_monster,
             'ai': BasicMonster(),
             'hp': 60,
-            'str': 16,
-            'dex': 4,
+            'str': 20,
+            'dex': 8,
             'defense': 2,
-            'power': 2,
-            'xp': 288
+            'resistance': 0,
+            'xp': 360
         }
     }
 

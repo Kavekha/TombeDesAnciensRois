@@ -11,14 +11,17 @@ from loader_functions.scores_loader import create_score_bill    #v14a
 class DamageType(Enum):
     UNKNOWN = 1
     PHYSICAL = 2
+    FIRE = 3
+    LIGHTNING = 4
+    LIFE = 5
 
 
 class Fighter:
-    def __init__(self, hp, str, dex, defense=0, power=0, xp=0):
+    def __init__(self, hp, str, dex, defense=0, resistance=0, xp=0):
         self.base_max_hp = hp
         self.hp = hp
         self.base_defense = defense
-        self.base_power = power
+        self.base_resistance = resistance
         self.xp = xp
         self.base_str = str
         self.base_dex = dex
@@ -51,13 +54,13 @@ class Fighter:
         return self.base_max_hp + bonus
 
     @property
-    def power(self):
+    def resistance(self):
         if self.owner and self.owner.equipment:
-            bonus = self.owner.equipment.power_bonus
+            bonus = self.owner.equipment.resistance_bonus
         else:
             bonus = 0
 
-        return self.base_power + bonus
+        return self.base_resistance + bonus
 
     @property
     def defense(self):
@@ -80,6 +83,9 @@ class Fighter:
             results.append({'message': Message('{} attacks {} for {} hit points.'.format(
                 attacker.owner.name.capitalize(), self.owner.name, str(damage)), libtcod.white)})
 
+        if damage_type == DamageType.FIRE or damage_type == DamageType.LIGHTNING:
+            damage -= self.resistance
+
         self.hp -= damage
 
         if self.hp <= 0:
@@ -97,13 +103,9 @@ class Fighter:
 
         if rand <= hit_chance:
             damage = self.str
-            if self.power == 0:
-                damage = int(damage / 2)
-            else:
-                damage *= self.power
             results.extend(target.fighter.take_damage(damage, self, game_map, damage_type=DamageType.PHYSICAL))
         else:
-            results.append({'message': Message('{} attacks, but {} fully dodges the strike!'.format(
+            results.append({'message': Message('{} misses against {}!'.format(
                 self.owner.name.capitalize(), target.name.capitalize()), libtcod.white)})
 
         return results

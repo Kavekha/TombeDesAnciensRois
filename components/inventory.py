@@ -69,5 +69,3 @@ class Inventory:
         results.append({'item_dropped': item, 'message': Message('You drpped the {}'.format(item.name), libtcod.yellow)})
 
         return results
-
-
