@@ -52,6 +52,8 @@ class Fighter:
             bonus = self.owner.equipment.max_hp_bonus
         else:
             bonus = 0
+        if self.owner.level:
+            bonus += (self.owner.level.current_level - 1) * 10
 
         return self.base_max_hp + bonus
 
@@ -107,7 +109,7 @@ class Fighter:
     def attack(self, target, game_map):
         results = []
 
-        hit_chance = int((self.dex + 2) / ((target.fighter.dex + 2) * 2) * 100)
+        hit_chance = int((self.dex + 10) / ((target.fighter.dex + 10) * 2) * 100)
         rand = randint(1, 100)
 
         if target.ai:

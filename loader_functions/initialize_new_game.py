@@ -17,11 +17,12 @@ from map_objects.game_map import GameMap
 from render_functions import RenderOrder
 
 from data.data_weapons import generate_weapon
+from data.data_items import generate_item
 
 
 def get_constants():
     window_title = 'Tomb of the Ancient Kings'
-    version = '0.15c'
+    version = '0.15d'
     screen_width = 80
     screen_height = 50
 
@@ -101,6 +102,9 @@ def get_game_variables(constants):
     dagger = generate_weapon('dagger', 0, 0)
     player.inventory.add_item(dagger)
     player.equipment.toggle_equip(dagger)
+
+    potion = generate_item('healing_potion', 0, 0)
+    player.inventory.add_item(potion)
 
     game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'])
     game_map.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],

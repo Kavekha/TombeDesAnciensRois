@@ -55,6 +55,9 @@ class ConfusedMonster:
         return results
 
     def take_damage(self, damage):
+
+        results = []
+
         print('INFO : Damage taken while Confused')
         chance_to_stay_confuse = (self.owner.fighter.hp - damage) / self.owner.fighter.max_hp
         chance_to_stay_confuse *= 200
@@ -66,9 +69,9 @@ class ConfusedMonster:
             self.number_of_turns -= 2
             print('INFO : confuse time reduces by damage.')
             if self.number_of_turns <= 0:
-                self.out_of_confusion()
-        else:
-            print('INFO : Damage taken but effect not reduce.')
+                results.extend(self.out_of_confusion())
+
+        return results
 
     def out_of_confusion(self):
         results = []

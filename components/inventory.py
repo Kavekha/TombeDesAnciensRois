@@ -11,6 +11,8 @@ class Inventory:
     def add_item(self, item):
         results = []
 
+        print('INFO : Item recuperé {}', item.name, type(item))
+
         if len(self.items) >= self.capacity:
             results.append({
                 'item_added': None,
@@ -23,15 +25,19 @@ class Inventory:
             })
 
             # v15 stack item.
-            for i in self.items:
-                print('DEBUG : item is {}, compared to {}', i, item)
-                # v15 : meme fonction, ignore les stats differentes et autres criteres uniques (plus tard).
-                if i.item.use_function == item.item.use_function:
-                    print('DEBUG : item found, stack created!')
-                    i.item.stack += 1
-                    break
+            if item.item.use_function:
+                print('INFO : Je suis un item de type item.')
+                for i in self.items:
+                    print('DEBUG : item is {}, compared to {}', i, item, i.name, item.name)
+                    # v15 : meme fonction, ignore les stats differentes et autres criteres uniques (plus tard).
+                    if i.item.use_function == item.item.use_function:
+                        print('DEBUG : item found, stack created!')
+                        i.item.stack += 1
+                        break
+                else:
+                    print('DEBUG : item not found, added.')
+                    self.items.append(item)
             else:
-                print('DEBUG : item not found, added.')
                 self.items.append(item)
 
         return results
@@ -40,15 +46,7 @@ class Inventory:
         results = []
 
         item_component = item_entity.item
-
-        if item_component.use_function is None:
-            equippable_component = item_entity.equippable
-
-            if equippable_component:
-                results.append({'equip': item_entity})
-            else:
-                results.append({'message': Message('The {} cannot be used.'.format(item_entity.name), libtcod.yellow)})
-        else:
+        if item_component.use_function:
             if item_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
                 results.append({'targeting': item_entity})
             else:
@@ -61,15 +59,25 @@ class Inventory:
 
                 results.extend(item_use_results)
 
+        else:
+            equippable_component = item_entity.equippable
+            if equippable_component:
+                results.append({'equip': item_entity})
+            else:
+                results.append({'message': Message('The {} cannot be used.'.format(item_entity.name), libtcod.yellow)})
+
         return results
 
     def remove_item(self, item, nb_to_remove=1):
         # v15 : stack
-        if nb_to_remove > item.item.stack:
-            nb_to_remove = item.item.stack
+        if item.item.use_function:
+            if nb_to_remove > item.item.stack:
+                nb_to_remove = item.item.stack
 
-        if item.item.stack > nb_to_remove:
-            item.item.stack -= nb_to_remove
+            if item.item.stack > nb_to_remove:
+                item.item.stack -= nb_to_remove
+            else:
+                self.items.remove(item)
         else:
             self.items.remove(item)
 
@@ -87,8 +95,11 @@ class Inventory:
         item.y = self.owner.y
 
         # v15 stack system
-        if item.item.stack > 1:
-            results.append({'item_dropped': item, 'message': Message('You dropped {} {}'.format(str(item.item.stack), item.name), libtcod.yellow)})
+        if item.item.use_function:
+            if item.item.stack > 1:
+                results.append({'item_dropped': item, 'message': Message('You dropped {} {}'.format(str(item.item.stack), item.name), libtcod.yellow)})
+            else:
+                results.append({'item_dropped': item, 'message': Message('You dropped the {}'.format(item.name), libtcod.yellow)})
         else:
             results.append({'item_dropped': item, 'message': Message('You dropped the {}'.format(item.name), libtcod.yellow)})
 

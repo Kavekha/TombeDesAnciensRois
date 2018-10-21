@@ -194,6 +194,9 @@ def handle_character_creation_menu(key):
     elif key.vk == libtcod.KEY_ENTER:
         return {'validate_creation': True}
 
+    elif key.vk == libtcod.KEY_BACKSPACE:
+        return {'letter':'backspace'}
+
     elif key.c > 0:
         letter = chr(key.c)
         return {'letter': letter}

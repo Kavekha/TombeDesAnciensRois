@@ -47,6 +47,7 @@ def inventory_menu(con, header, player, inventory, inventory_width, screen_width
             elif item.item.stack > 1:
                 options.append('{} ( {} )'.format(item.name, str(item.item.stack)))
             else:
+                print('INFO : Pas de stack. ', item)
                 options.append(item.name)
 
     menu(con, header, options, inventory_width, screen_width, screen_height)
@@ -93,7 +94,7 @@ def score_bill_menu(background_image, screen_width, screen_height):
 
 def level_up_menu(con, header, player, menu_width, screen_width, screen_height):
     options = ['Constitution (+20 hp, from {})'.format(player.fighter.base_max_hp),
-               'Strenght (+1 str, from {})'.format(player.fighter.base_str),
+               'Strength (+1 str, from {})'.format(player.fighter.base_str),
                'Dexterity (+1 dex, from {})'.format(player.fighter.base_dex)]
 
     menu(con, header, options, menu_width, screen_width, screen_height)
@@ -117,9 +118,11 @@ def character_screen(player, character_screen_width, character_screen_height, sc
     libtcod.console_print_rect_ex(window, 0, 7, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
                                   libtcod.LEFT, 'Maximum HP: {}'.format(player.fighter.max_hp))
     libtcod.console_print_rect_ex(window, 0, 8, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Strenght: {}'.format(player.fighter.str))
+                                  libtcod.LEFT, 'Strength: {} + {}'.format(player.fighter.base_str,
+                                                                           player.equipment.str_bonus))
     libtcod.console_print_rect_ex(window, 0, 9, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
-                                  libtcod.LEFT, 'Dexterity: {}'.format(player.fighter.dex))
+                                  libtcod.LEFT, 'Dexterity: {} + {}'.format(player.fighter.base_dex,
+                                                                            player.equipment.dex_bonus))
     libtcod.console_print_rect_ex(window, 0, 11, character_screen_width, character_screen_height, libtcod.BKGND_NONE,
                                   libtcod.LEFT, 'Resistance : {}'.format(player.fighter.resistance))
     libtcod.console_print_rect_ex(window, 0, 12, character_screen_width, character_screen_height, libtcod.BKGND_NONE,

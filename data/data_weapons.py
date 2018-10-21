@@ -17,7 +17,8 @@ def get_weapons_list(weapon_name):
             'defense_bonus': 0,
             'resistance_bonus': 0,
             'aspect': '/',
-            'color': libtcod.sky
+            'color': libtcod.sky,
+            'stackable': False
         },
         'shield': {
             'name': 'Shield',
@@ -28,7 +29,8 @@ def get_weapons_list(weapon_name):
             'defense_bonus': 2,
             'resistance_bonus': 0,
             'aspect': '[',
-            'color': libtcod.darker_orange
+            'color': libtcod.darker_orange,
+            'stackable': False
         },
         'dagger': {
             'name': 'Dagger',
@@ -39,7 +41,8 @@ def get_weapons_list(weapon_name):
             'defense_bonus': 0,
             'resistance_bonus': 0,
             'aspect': '-',
-            'color': libtcod.sky
+            'color': libtcod.sky,
+            'stackable': False
         }
     }
 
@@ -58,6 +61,7 @@ def generate_weapon(weapon_name, x, y):
     resistance_bonus = weapon.get('resistance_bonus')
     aspect = weapon.get('aspect')
     color = weapon.get('color')
+    stackable = weapon.get('stackable')
 
     equippable_component = Equippable(equipment_slot, str_bonus=str_bonus, dex_bonus=dex_bonus,
                                       max_hp_bonus=max_hp_bonus, defense_bonus=defense_bonus,

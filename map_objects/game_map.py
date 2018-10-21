@@ -123,7 +123,9 @@ class GameMap:
 
         monster_chances = {
             'orloog': from_dungeon_level([[80, 1], [70, 3], [60, 4], [50, 6], [40, 8]], self.dungeon_level),
-            'troll': from_dungeon_level([[2, 1], [10, 2], [20, 3], [30, 4], [40, 6], [60, 8]], self.dungeon_level),
+            'rat': from_dungeon_level([[10, 1], [20, 2], [30, 4], [40, 6], [50, 8]], self.dungeon_level),
+            'goblin': from_dungeon_level([[5, 1], [10, 3], [20, 5], [30, 6], [40, 8]], self.dungeon_level),
+            'troll': from_dungeon_level([[2, 1], [10, 2], [20, 3], [30, 4], [40, 6], [50, 8]], self.dungeon_level),
             'ogre': from_dungeon_level([[0, 2], [1, 3], [2, 4], [5, 5], [10, 6], [15, 8]], self.dungeon_level)
         }
 
@@ -142,6 +144,14 @@ class GameMap:
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 monster_choice = random_choice_from_dict(monster_chances)
+
+                if monster_choice == 'rat':
+                    print('Rat was chosen')
+                    monster = generate_monster('rat', x, y)
+
+                if monster_choice == 'goblin':
+                    print('Goblin was chosen')
+                    monster = generate_monster('goblin', x, y)
 
                 if monster_choice == 'orloog':
                     print('Orloog was chosen')

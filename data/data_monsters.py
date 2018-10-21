@@ -81,6 +81,32 @@ def get_monster_list(monster_name):
             'defense': 2,
             'resistance': 0,
             'xp': 360
+        },
+        'rat': {
+            'name': 'Rat',
+            'aspect': 'r',
+            'color': libtcod.dark_green,
+            'death_function': kill_monster,
+            'ai': BasicMonster(),
+            'hp': 10,
+            'str': 3,
+            'dex': 12,
+            'defense': 0,
+            'resistance': 0,
+            'xp': 30
+        },
+        'goblin': {
+            'name': 'Goblin',
+            'aspect': 'G',
+            'color': libtcod.light_green,
+            'death_function': kill_monster,
+            'ai': BasicMonster(),
+            'hp': 20,
+            'str': 7,
+            'dex': 6,
+            'defense': 1,
+            'resistance': 0,
+            'xp': 56
         }
     }
 
