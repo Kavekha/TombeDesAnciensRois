@@ -32,6 +32,38 @@ class BasicMonster:
         return results
 
 
+class Obstacle:
+    def __init__(self, tile, entities, number_of_turn=1):
+        self.number_of_turns = number_of_turn
+        self.tile = tile
+        self.entities = entities
+
+        self.tile.blocked = True
+        self.tile.block_sight = True
+
+    def take_turn(self, target, fov_map, game_map, entities):
+        results = []
+
+        if self.number_of_turns > 0:
+            self.number_of_turns -= 1
+            print('DEBUG : turn')
+        else:
+            print('DDEBUG : dispel')
+            self.dispeled()
+
+        print('DEBUG : Arcanic wall take turn. Nb of turn : ', self.number_of_turns)
+
+        return results
+
+    def dispeled(self):
+        print('Dispel asked.')
+        print('Before dispel : {}'.format(self.tile.blocked))
+        self.tile.blocked = False
+        self.tile.block_sight = False
+        print('After dispel : {}'.format(self.tile.blocked))
+        self.entities.remove(self.owner)
+
+
 class ConfusedMonster:
     def __init__(self, previous_ai, number_of_turns=10):
         self.previous_ai = previous_ai

@@ -40,7 +40,7 @@ def get_dungeon_specs(dungeon_name):
             }
         },
         'the_necropole': {
-            'dungeon_name': 'La Necropole',
+            'dungeon_name': 'Necropole',
             'nb_floors': 8,
             'room_min_size': 4,
             'room_max_size': 12,
@@ -60,10 +60,10 @@ def get_dungeon_specs(dungeon_name):
             'monster_chances': {
                 'skeleton': [[80, 1], [70, 3], [60, 4], [50, 6], [40, 8]],
                 'chauvesouris': [[20, 1], [25, 2], [35, 4], [45, 6], [55, 8]],
-                'zombie': [[0, 1], [2, 2], [4, 3], [16, 5], [32, 6], [64, 8]],
-                'fantome': [[0, 1], [1, 2], [2, 3], [4, 4], [12, 6], [48, 8]],
-                'vampire': [[0, 1], [1, 4], [2, 5], [5, 6], [20, 8]],
-                'mumy': [[0, 1], [1, 5], [2, 6], [4, 7], [8, 10]]
+                'zombie': [[0, 1], [2, 2], [4, 3], [8, 4], [16, 5], [32, 6], [64, 8]],
+                'fantome': [[0, 1], [1, 2], [2, 3], [5, 4], [20, 6], [40, 8]],
+                'vampire': [[0, 1], [1, 3], [2, 5], [10, 6], [20, 8]],
+                'mumy': [[0, 1], [1, 4], [2, 5], [4, 6], [8, 7], [12, 8]]
             },
             'item_chances': {
                 'healing_potion': [[20, 1]],

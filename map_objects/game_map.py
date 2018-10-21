@@ -23,12 +23,12 @@ from data.data_dungeons import generate_dungeon_building_specs, generate_dungeon
 
 # v15 Refacto.
 class GameMap:
-    def __init__(self, width, height, version, dungeon_level=1, dungeon_config=get_random_dungeon()):
+    def __init__(self, width, height, version, name, dungeon_level=1, dungeon_config=get_random_dungeon()):
         self.width = width
         self.height = height
         self.tiles = self.initialize_tiles()
         self.version = version
-
+        self.name = name
         self.dungeon_level = dungeon_level
         self.dungeon_config = dungeon_config
 
@@ -45,6 +45,8 @@ class GameMap:
 
         dungeon_name, nb_floors, room_min_size, room_max_size, \
         max_room = generate_dungeon_building_specs(dungeon_to_build)
+
+        self.name = dungeon_name
 
         rooms = []
         num_rooms = 0
