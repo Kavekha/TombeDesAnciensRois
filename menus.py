@@ -150,3 +150,22 @@ def victory_screen(character_screen_width, character_screen_height, screen_width
     y = screen_height // 2 - character_screen_height // 2
 
     libtcod.console_blit(window, 0, 0, character_screen_width, character_screen_height, 0, x, y, 1.0, 0.7)
+
+
+# v14
+def character_creation_menu(background_image, screen_width, screen_height, character_name):
+
+    libtcod.image_blit_2x(background_image, 0, 0, 0)
+
+    libtcod.console_set_default_foreground(0, libtcod.light_yellow)
+    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 4) - 4, libtcod.BKGND_NONE,
+                             libtcod.CENTER, 'NEW GAME : CREATION SCREEN')
+
+    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height / 4), libtcod.BKGND_NONE,
+                             libtcod.CENTER, character_name)
+
+    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 5), libtcod.BKGND_NONE,
+                             libtcod.CENTER, 'Press ENTER to validate')
+    libtcod.console_print_ex(0, int(screen_width / 2), int(screen_height - 4), libtcod.BKGND_NONE,
+                             libtcod.CENTER, 'Press ESC for Main Menu')
+

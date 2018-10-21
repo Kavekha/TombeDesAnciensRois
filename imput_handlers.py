@@ -171,3 +171,18 @@ def handle_character_screen(key):
         return {'exit': True}
 
     return {}
+
+
+# v14
+def handle_character_creation_menu(key):
+    if key.vk == libtcod.KEY_ESCAPE:
+        return {'exit_creation': True}
+
+    elif key.vk == libtcod.KEY_ENTER:
+        return {'validate_creation': True}
+
+    elif key.c > 0:
+        letter = chr(key.c)
+        return {'letter': letter}
+
+    return {}
