@@ -7,14 +7,15 @@ from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message
 from game_states import GameStates
-from imput_handlers import handle_keys, handle_mouse, handle_main_menu, handle_score_bill_menu
+from imput_handlers import handle_keys, handle_mouse, handle_main_menu, handle_score_bill_menu, \
+    handle_character_creation_menu
 
 from loader_functions.initialize_new_game import get_constants, get_game_variables
 from loader_functions.data_loaders import save_game, load_game
 from loader_functions.scores_loader import create_score_bill
 
 from render_functions import clear_all, render_all
-from menus import main_menu, message_box, score_bill_menu
+from menus import main_menu, message_box, score_bill_menu, character_creation_menu
 
 
 def main():
@@ -40,7 +41,9 @@ def main_screen(constants):
     show_main_menu = True
     show_load_error_message = False
     show_score_bill = False
+    show_creation_menu = False
 
+    character_name = str("")
     main_menu_background_image = libtcod.image_load('menu_background.png')
 
     key = libtcod.Key()
@@ -73,9 +76,9 @@ def main_screen(constants):
                 show_load_error_message = False
 
             elif new_game:
-                player, entities, game_map, message_log, game_state = get_game_variables(constants)
-                game_state = GameStates.PLAYERS_TURN
+                # v14.
                 show_main_menu = False
+                show_creation_menu = True
 
             elif load_saved_game:
                 try:
@@ -92,7 +95,37 @@ def main_screen(constants):
             elif exit_game:
                 break
 
-        # v14.
+        # v14
+        elif show_creation_menu:
+            character_creation_menu(main_menu_background_image, constants['screen_width'],
+                                      constants['screen_height'], character_name)
+
+            libtcod.console_flush()
+
+            action = handle_character_creation_menu(key)
+
+            exit_creation = action.get('exit_creation')
+            validate_creation = action.get('validate_creation')
+            letter = action.get('letter')
+
+            if letter in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '-']:
+                if len(character_name) < 10:
+                    character_name += str(letter)
+
+            if validate_creation:
+                if len(character_name) == 0:
+                    character_name = 'Player'
+
+                show_creation_menu = False
+                player, entities, game_map, message_log, game_state = get_game_variables(constants)
+                player.name = character_name
+                game_state = GameStates.PLAYERS_TURN
+
+            if exit_creation:
+                show_creation_menu = False
+                show_main_menu = True
+
+        # v14
         elif show_score_bill:
             # show score bill.
             score_bill_menu(main_menu_background_image, constants['screen_width'],
