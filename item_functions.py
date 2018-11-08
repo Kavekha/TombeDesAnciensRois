@@ -4,120 +4,112 @@ from game_messages import Message
 from components.ai import ModifiedMindMonster, BrainStates
 
 
-def heal(*args, **kwargs):
-    entity = args[0]
-    amount = kwargs.get('power')
+def gain_mana(caster, spell_entity, **kwargs):
+    entity = caster
+    amount = spell_entity.item.power
+
+    results = []
+
+    if entity.fighter.mana == entity.fighter.max_mana:
+        results.append({'targeting_cancelled': True, 'message': Message('You are already at full mana.',
+                                                                        libtcod.yellow)})
+    else:
+        entity.fighter.gain_mana(amount)
+        results.append({'consumed': spell_entity, 'message': Message('You feel more connected to the energies of the world '
+                                                             'than ever!', libtcod.green)})
+
+    return results
+
+
+def heal(caster, spell_entity, **kwargs):
+    entity = caster
+    amount = spell_entity.item.power
+
 
     results = []
 
     if entity.fighter.hp == entity.fighter.max_hp:
-        results.append({'consumed': False, 'message': Message('You are already at full health.', libtcod.yellow)})
+        results.append({'targeting_cancelled': True, 'message': Message('You are already at full health.',
+                                                                        libtcod.yellow)})
     else:
         entity.fighter.heal(amount)
-        results.append({'consumed': True, 'message': Message('Your wounds start to feel better!', libtcod.green)})
+        results.append({'consumed': spell_entity, 'message': Message('Your wounds start to feel better!', libtcod.green)})
 
     return results
 
 
-def cast_lightning(*args, **kwargs):
-    print('DEBUG : Lightning cast!')
-    caster = args[0]
-    entities = kwargs.get('entities')
-    fov_map = kwargs.get('fov_map')
-    damage = kwargs.get('power')
-    maximum_range = kwargs.get('maximum_range')
+def cast_lightning(caster, spell_entity, **kwargs):
+    caster = caster
+    damage = spell_entity.item.power
     game_map = kwargs.get('game_map')
-    damage_type = kwargs.get('damage_type')
-
-    print('DEBUG : lightning : args {} , entities {} , fov map {} , damage {} , max range {} , game map {} , '
-          'damagetype {} '.format(caster, entities, fov_map, damage, maximum_range, game_map, damage_type ))
+    damage_type = spell_entity.item.damage_type
+    target_list = kwargs.get('target_entity')
 
     results = []
 
-    target = None
-    closest_distance = maximum_range + 1
-
-    for entity in entities:
-        if entity.fighter and entity != caster and libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
-            distance = caster.distance_to(entity)
-
-            if distance < closest_distance:
-                target = entity
-                closest_distance = distance
-
-    if target:
-        results.append({'consumed': True, 'target': target, 'message': Message(
-            'A lightning bolt strikes the {} with a loud thunder! The damage is {}.'.format(target.name, damage))})
+    for target in target_list:
+        results.append({'consumed': spell_entity, 'target': target, 'message': Message(
+                        'A lightning bolt strikes the {} with a loud thunder!'.format(target.name), libtcod.orange)})
         results.extend(target.fighter.take_damage(damage, caster, game_map, damage_type))
-    else:
-        results.append({'consumed': False, 'target': None, 'message': Message('No enemy is close enough to strike.',
-                                                                              libtcod.red)})
+        break
+
     return results
 
 
-def cast_fireball(*args, **kwargs):
-    print('DEBUG : fireball cast!')
-    caster = args[0]
-    entities = kwargs.get('entities')
-    fov_map = kwargs.get('fov_map')
-    damage = kwargs.get('power')
-    radius = kwargs.get('radius')
-    target_x = kwargs.get('target_x')
-    target_y = kwargs.get('target_y')
+def cast_fireball(caster, spell_entity, **kwargs):
+    caster = caster
+    damage = spell_entity.item.power
+    radius = spell_entity.item.radius
     game_map = kwargs.get('game_map')
     damage_type = kwargs.get('damage_type')
 
+    target_list = kwargs.get('target_entity')
+
     results = []
 
-    if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
-        results.append({'consumed': False, 'message': Message('You cannot target a tile outside your field of vision.', libtcod.yellow)})
-        return results
+    results.append({'consumed': spell_entity, 'message': Message('The fireball explodes, burning everything within {} tiles!'.
+                                                         format(radius), libtcod.orange)})
 
-    results.append({'consumed': True, 'message': Message('The fireball explodes, burning everything within {} tiles!'.format(radius), libtcod.orange)})
-
-    for entity in entities:
-        if entity.distance(target_x, target_y) <= radius and entity.fighter:
-            results.append({'message': Message('The {} gets burned for {} hit points.'.format(entity.name, damage), libtcod.orange)})
+    if target_list:
+        for entity in target_list:
+            results.append({'message': Message('The {} gets burned for {} hit points.'.format(entity.name, damage),
+                                               libtcod.orange)})
             results.extend(entity.fighter.take_damage(damage, caster, game_map, damage_type))
 
+
     return results
 
 
-def cast_confuse(*args, **kwargs):
-    entities = kwargs.get('entities')
-    fov_map = kwargs.get('fov_map')
-    target_x = kwargs.get('target_x')
-    target_y = kwargs.get('target_y')
+def cast_confuse(caster, item_entity, **kwargs):
+    caster = caster
+    power = item_entity.item.power
+
+    target_entity = kwargs.get('target_entity')
+
 
     results = []
 
-    if not libtcod.map_is_in_fov(fov_map, target_x, target_y):
-        results.append({'consumed': False, 'message': Message('You cannot target a tile outside your field of view.',
-                                                              libtcod.yellow)})
-        return results
+    print('DEBUG : item cast confuse caster is : ', caster.name)
+    duration = power + caster.fighter.int
 
-    for entity in entities:
-        if entity.x == target_x and entity.y == target_y and entity.ai:
-            # v15.
-            if entity.ai.state == BrainStates.CONFUSED:
+    if target_entity.ai:
+        if target_entity.ai.state == BrainStates.CONFUSED:
 
-                entity.ai.number_of_turns += 5
+            target_entity.ai.number_of_turns += int(duration / 2)
 
-                results.append({'consumed': True, 'message': Message(
-                    'The eyes of the {} change briefly, then he keep stumbling around!'.format(entity.name),
-                    libtcod.light_green)})
+            results.append({'consumed': item_entity, 'message': Message(
+                'The eyes of the {} change briefly, then he keep stumbling around!'.format(target_entity.name),
+                libtcod.light_green)})
             # before v15, no if / else.
-            else:
-                confused_ai = ModifiedMindMonster(entity.ai, 10)
+        else:
+            confused_ai = ModifiedMindMonster(target_entity.ai, duration)
 
-                confused_ai.owner = entity
-                entity.ai = confused_ai
+            confused_ai.owner = target_entity
+            target_entity.ai = confused_ai
 
-                results.append({'consumed': True, 'message': Message(
-                    'The eyes of the {} look vacant, as he stats to stumble around!'.format(entity.name),
-                    libtcod.light_green)})
-
-            break
+            results.append({'consumed': item_entity, 'message': Message(
+                'The eyes of the {} look vacant, as he stats to stumble around!'.format(target_entity.name),
+                libtcod.light_green)})
 
     else:
         results.append({'consumed': False, 'message': Message('There is no targetable enemy at that location.',

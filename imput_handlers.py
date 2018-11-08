@@ -85,7 +85,6 @@ def handle_player_turn_keys(key):
         return {'pickup': True}
 
     elif key_char == 'b':
-        print('INFO : Spellbook requested.')
         return {'spellbook': True}
     elif key_char == 'i':
         return {'show_inventory': True}

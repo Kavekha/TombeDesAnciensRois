@@ -59,7 +59,6 @@ def inventory_menu(con, header, player, inventory, inventory_width, screen_width
             elif item.item.stack > 1:
                 options.append('{} ( {} )'.format(item.name, str(item.item.stack)))
             else:
-                print('INFO : Pas de stack. ', item)
                 options.append(item.name)
 
     menu(con, header, options, inventory_width, screen_width, screen_height)

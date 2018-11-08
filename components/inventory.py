@@ -26,16 +26,12 @@ class Inventory:
 
             # v15 stack item.
             if item.item.use_function:
-                print('INFO : Je suis un item de type item.')
                 for i in self.items:
-                    print('DEBUG : item is {}, compared to {}', i, item, i.name, item.name)
                     # v15 : meme fonction, ignore les stats differentes et autres criteres uniques (plus tard).
                     if i.item.use_function == item.item.use_function:
-                        print('DEBUG : item found, stack created!')
                         i.item.stack += 1
                         break
                 else:
-                    print('DEBUG : item not found, added.')
                     self.items.append(item)
             else:
                 self.items.append(item)
@@ -45,19 +41,27 @@ class Inventory:
     def use(self, item_entity, **kwargs):
         results = []
 
-        item_component = item_entity.item
-        if item_component.use_function:
-            if item_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
-                results.append({'targeting': item_entity})
+        print('INVENTORY : item entity is ', item_entity)
+        #item_component = item_entity.item
+
+        if item_entity.item.use_function:
+            if not item_entity.item.targeting and not item_entity.item.to_cast:
+                results.append({'message': Message('{} doesn t have a targeting system. Canceled.'.format(
+                    item_entity.name), libtcod.yellow)})
+
+            elif kwargs.get('to_cast'):
+                kwargs = {**item_entity.item.function_kwargs, **kwargs}
+                spell_cast_results = item_entity.item.use_function(self.owner, item_entity, **kwargs)
+
+                results.extend(spell_cast_results)
+
+            # refacto v16c
+            elif item_entity.item.targeting:
+                results.append({'spell_targeting': {'spell': item_entity, 'target_mode': item_entity.item.targeting}})
+
             else:
-                kwargs = {**item_component.function_kwargs, **kwargs}
-                item_use_results = item_component.use_function(self.owner, **kwargs)
-
-                for item_use_result in item_use_results:
-                    if item_use_result.get('consumed'):
-                        self.remove_item(item_entity)
-
-                results.extend(item_use_results)
+                results.append({'message': Message('Error : {} has no target mode.'.format(item_entity.name),
+                                                   libtcod.yellow)})
 
         else:
             equippable_component = item_entity.equippable

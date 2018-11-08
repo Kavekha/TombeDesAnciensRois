@@ -24,8 +24,7 @@ def get_spells_list(spell_name):
             'mana_cost': 4,
             'spell_level': 1,
             'power': 2,
-            'damage_type': DamageType.ARCANE,
-            'to_cast': False
+            'damage_type': DamageType.ARCANE
         },
         # magic missile random target
         'magic_missile': {
@@ -37,8 +36,7 @@ def get_spells_list(spell_name):
             'mana_cost': 6,
             'spell_level': 2,
             'power': 6,
-            'damage_type': DamageType.ARCANE,
-            'to_cast': False
+            'damage_type': DamageType.ARCANE
         },
         # target tile.
         'arcanic_wall': {
@@ -50,8 +48,7 @@ def get_spells_list(spell_name):
             'mana_cost': 4,
             'spell_level': 1,
             'power': 2,
-            'damage_type': DamageType.ARCANE,
-            'to_cast': False
+            'damage_type': DamageType.ARCANE
         },
         'power_orb': {
             'spell_name': 'Orbe de puissance',
@@ -62,8 +59,7 @@ def get_spells_list(spell_name):
             'mana_cost': 9,
             'spell_level': 3,
             'power': 13,
-            'damage_type': DamageType.ARCANE,
-            'to_cast': False
+            'damage_type': DamageType.ARCANE
         },
         'evocation': {
             'spell_name': 'Evocation',
@@ -74,8 +70,7 @@ def get_spells_list(spell_name):
             'mana_cost': 9,
             'spell_level': 3,
             'power': 13,
-            'damage_type': DamageType.ARCANE,
-            'to_cast': False
+            'damage_type': DamageType.ARCANE
         },
         'mass_paralyze': {
             'spell_name': 'Paralysie de masse',
@@ -86,8 +81,7 @@ def get_spells_list(spell_name):
             'mana_cost': 12,
             'spell_level': 4,
             'power': 24,
-            'damage_type': DamageType.ARCANE,
-            'to_cast': False
+            'damage_type': DamageType.ARCANE
         }
     }
 
@@ -111,11 +105,10 @@ def generate_spell(spell_name, x, y):
     spell_level = spec_from_spell['spell_level']
     power = spec_from_spell['power']
     damage_type = spec_from_spell['damage_type']
-    to_cast = spec_from_spell['to_cast']
 
     spell_component = Spell(spell_function=spell_function, targeting=targeting,
                             targeting_message=targeting_message, mana_cost=mana_cost,
-                            spell_level=spell_level, power=power, damage_type=damage_type, to_cast=to_cast, radius=radius)
+                            spell_level=spell_level, power=power, damage_type=damage_type, radius=radius)
     spell_to_create = Entity(x, y, '.', libtcod.white, spell_name, render_order=RenderOrder.ITEM, spell=spell_component)
 
     return spell_to_create
