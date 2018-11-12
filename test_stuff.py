@@ -140,6 +140,15 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             else:
                 message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
 
+
+
+
+
+
+
+
+
+
         # SPELLBOOK & SPELL & TARGETING
         if show_spellbook:
             previous_game_state = game_state
@@ -155,89 +164,63 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             previous_game_state = game_state
             game_state = GameStates.DROP_INVENTORY
 
-        # IF PLAYER HAS OPEN INVENTORY OR SPELLBOOK : wait for input
+        # IF PLAYER HAS CHOSEN SOME ITEM TO DROP/ USE FROM INVENTORY OR A SPELL FROM SPELLBOOK
         if spellbook_index is not None or inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD:
 
-            # Spellbook, index given by player.
             if spellbook_index is not None and spellbook_index < len(player.spellbook.spells):
-                print('DEBUG : spellbook inferieur a len : ', len(player.spellbook.spells))
                 spell_or_item_to_use = player.spellbook.spells[spellbook_index]
-                # CAN THE SPELL BE CASTED?
-                if game_state == GameStates.SHOW_SPELLBOOK:
-                    # since its spellbook, we know object is spell
-                    if spell_or_item_to_use.spell.mana_cost > player.fighter.mana:
-                        message_log.add_message(
-                            Message('Not enough mana to cast {}'.format(spell_or_item_to_use.name), libtcod.yellow))
-                    else:
-                        # on recoit à la fin "spell_entity" qui est spell_or_item_to_use + .spell et le targeting_mode.
-                        print('INFO : In SHOW SPELLBOOK, spelloritem is ', spell_or_item_to_use)
-                        player_turn_results.extend(
-                            player.spellbook.cast_spell(spell_or_item_to_use, entities=entities, fov_map=fov_map,
-                                                        to_cast=spell_or_item_to_use.spell.to_cast,
-                                                        game_map=game_map))
-                        print('INFO : We cast some spell ')
 
             elif inventory_index is not None and inventory_index < len(player.inventory.items):
                 spell_or_item_to_use = player.inventory.items[inventory_index]
-                print('DEBUG : item at inventory index is : ', spell_or_item_to_use)
-
-                # ARE WE USING AN ITEM?
-                if game_state == GameStates.SHOW_INVENTORY:
-                    print('DEBUG : spell or item to use is : ', spell_or_item_to_use)
-                    player_turn_results.extend(player.inventory.use(spell_or_item_to_use, entities=entities,
-                                                                    fov_map=fov_map))
-
-                # ARE WE DROPING AN ITEM?
-                elif game_state == GameStates.DROP_INVENTORY:
-                    player_turn_results.extend(player.inventory.drop_item(spell_or_item_to_use))
-
             else:
-                # inventory / spellbook index out of range of the player inventory / spellbook.
-                print('WARNING : Choose out of range of the spellbook / inventory.')
+                print('WARNING : action required from Spellbook or inventory, case not supported!!')
+                break
+
+            # object : spell or item we want to use
+
+            # CAN THE SPELL BE CASTED?
+            if game_state == GameStates.SHOW_SPELLBOOK:
+                # since its spellbook, we know object is spell
+                if spell_or_item_to_use.spell.mana_cost > player.fighter.mana:
+                    message_log.add_message(
+                        Message('Not enough mana to cast {}'.format(spell_or_item_to_use.name), libtcod.yellow))
+                else:
+                    # on recoit à la fin "spell_entity" qui est spell_or_item_to_use + .spell et le targeting_mode.
+                    player_turn_results.extend(
+                        player.spellbook.cast_spell(spell_or_item_to_use, entities=entities, fov_map=fov_map,
+                                                    to_cast=spell_or_item_to_use.spell.to_cast,
+                                                    game_map=game_map))
+
+            # ARE WE USING AN ITEM?
+            if game_state == GameStates.SHOW_INVENTORY:
+                player_turn_results.extend(player.inventory.use(spell_or_item_to_use, entities=entities, fov_map=fov_map))
+
+            # ARE WE DROPING AN ITEM?
+            elif game_state == GameStates.DROP_INVENTORY:
+                player_turn_results.extend(player.inventory.drop_item(spell_or_item_to_use))
+
 
         # WE HAVE NOW AN item_or_spell_targeting, through the player_turn results of spell.use / item.use
         if game_state == GameStates.SPELL_TARGETING:
 
-            target_entities = spell_targeting_resolution(item_or_spell_targeting, target_mode, player, game_map, fov_map,
-                                                           entities, left_click, right_click)
+            spell_use_results = spell_targeting_resolution(item_or_spell_targeting, target_mode, player, game_map, fov_map,
+                                                           entities, action, left_click, right_click)
 
-            # objectif a lancer.
-            # spell_use_results = spell_targeting_resolution(item_or_spell_targeting, target_mode, player, game_map, fov_map,
-            #                                               entities, action, left_click, right_click)
+            player_turn_results.extend(spell_use_results)
 
-            if target_entities:
-                if left_click:
-                    target_x, target_y = left_click
-                else:
-                    target_x, target_y = None, None
+        # DOIT DISPARAITRE DANS LA REFACTO !!!! TO REMOVE
+        if game_state == GameStates.TARGETING:
+            if left_click:
+                target_x, target_y = left_click
 
-                print('BEFORE cast true : target entities is ', target_entities)
-                print('INFO : item_or_spell targeting ', item_or_spell_targeting)
-                if item_or_spell_targeting.spell:
-                    spell_use_results = player.spellbook.cast_spell(item_or_spell_targeting,
-                                                                    mana_cost=item_or_spell_targeting.spell.mana_cost,
-                                                                    entities=entities, target_x=target_x,
-                                                                    target_y=target_y,
-                                                                    target_entity=target_entities,
-                                                                    to_cast=True, game_map=game_map)
-                    player_turn_results.extend(spell_use_results)
+                item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
+                                                        target_x=target_x, target_y=target_y)
+                player_turn_results.extend(item_use_results)
 
-                elif item_or_spell_targeting.item:
-                    spell_use_results = player.inventory.use(item_or_spell_targeting, entities=entities,
-                                                             target_x=target_x, target_y=target_y,
-                                                             target_entity=target_entities, to_cast=True,
-                                                             game_map=game_map)
-
-                    player_turn_results.extend(spell_use_results)
-
-            elif target_entities is None:
-                pass
-
-            elif not target_entities:
+            elif right_click:
                 player_turn_results.append({'targeting_cancelled': True})
 
-            else:
-                print('Else in target entities, spell targeting. Should not happen.')
+
 
         # CHARAC SCREEN
         if show_character_screen:
@@ -315,20 +298,9 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 item_or_spell_targeting = spell_targeting['spell']
                 target_mode = spell_targeting['target_mode']
 
-                print('DEBUG : Item or spell targeting is : ', item_or_spell_targeting)
-                print('DEBUG : Item or spell targeting owner is : ', item_or_spell_targeting.name)
-                if item_or_spell_targeting.spell:
-                    if item_or_spell_targeting.spell.targeting_message:
-                        message_log.add_message(item_or_spell_targeting.spell.targeting_message)
-                elif item_or_spell_targeting.item:
-                    if item_or_spell_targeting.item.targeting_message:
-                        message_log.add_message(item_or_spell_targeting.item.targeting_message)
-
-                '''
                 # v16 : msg if no targeting obj message.
                 if item_or_spell_targeting.spell.targeting_message:
                     message_log.add_message(item_or_spell_targeting.spell.targeting_message)
-                '''
 
             # ITEM RESOLUTION.
             if item_added:
@@ -336,7 +308,6 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                 game_state = GameStates.ENEMY_TURN
 
             if item_consumed:
-                player.inventory.remove_item(item_consumed, 1)
                 game_state = GameStates.ENEMY_TURN
 
             if item_dropped:

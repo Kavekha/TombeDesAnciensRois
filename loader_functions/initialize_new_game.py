@@ -89,8 +89,8 @@ def get_constants():
     return constants
 
 
-def get_game_variables(constants):
-    fighter_component = Fighter(hp=50, mana=10, str=2, dex=2, int=1, background='mage')
+def create_player(background=None):
+    fighter_component = Fighter(hp=50, mana=10, str=2, dex=2, int=1, background=background)
     inventory_component = Inventory(26)
     level_component = Level()
     equipment_component = Equipment()
@@ -100,19 +100,31 @@ def get_game_variables(constants):
                     fighter=fighter_component, inventory=inventory_component, level=level_component,
                     equipment=equipment_component, death=death_component, spellbook=spellbook_component)
 
-    entities = [player]
-
-    dagger = generate_weapon('dagger', 0, 0)
-    player.inventory.add_item(dagger)
-    player.equipment.toggle_equip(dagger)
-
+    # No background, default stuff.
     for item_to_create in ('healing_potion', 'mana_potion'):
         item = generate_item(item_to_create, 0, 0)
         player.inventory.add_item(item)
 
-    for spell_to_create in ('magic_missile', 'arcanic_wall', 'evocation', 'mass_paralyze'):
-        spell = generate_spell(spell_to_create, 0, 0)
-        player.spellbook.add_spell(spell)
+    if background == 'warrior':
+        dagger = generate_weapon('dagger', 0, 0)
+        player.inventory.add_item(dagger)
+        player.equipment.toggle_equip(dagger)
+
+    if background == 'mage':
+        staff = generate_weapon('staff', 0, 0)
+        player.inventory.add_item(staff)
+        player.equipment.toggle_equip(staff)
+
+        for spell_to_create in ('magic_missile', 'arcanic_wall', 'evocation', 'mass_paralyze'):
+            spell = generate_spell(spell_to_create, 0, 0)
+            player.spellbook.add_spell(spell)
+
+    return player
+
+
+def get_game_variables(constants, player):
+
+    entities = [player]
 
     game_map = GameMap(constants['map_width'], constants['map_height'], constants['version'], 'Dungeon')
     game_map.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],
@@ -122,4 +134,4 @@ def get_game_variables(constants):
 
     game_state = GameStates.PLAYERS_TURN
 
-    return player, entities, game_map, message_log, game_state
+    return entities, game_map, message_log, game_state

@@ -4,8 +4,7 @@ import os
 
 def save_game(player, entities, game_map, message_log, game_state):
     # v15 Named save
-    player_name = player.name
-    file_name = './saves/' + player_name + '_savegame'
+    file_name = './saves/' + player.name + '_savegame'
 
     with shelve.open(file_name, 'n') as data_file:
         print('DEBUG : shelve open save')
