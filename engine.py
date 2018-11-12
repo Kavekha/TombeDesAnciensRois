@@ -155,48 +155,45 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
             previous_game_state = game_state
             game_state = GameStates.DROP_INVENTORY
 
-        # IF PLAYER HAS CHOSEN SOME ITEM TO DROP/ USE FROM INVENTORY OR A SPELL FROM SPELLBOOK
+        # IF PLAYER HAS OPEN INVENTORY OR SPELLBOOK : wait for input
         if spellbook_index is not None or inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD:
 
+            # Spellbook, index given by player.
             if spellbook_index is not None and spellbook_index < len(player.spellbook.spells):
+                print('DEBUG : spellbook inferieur a len : ', len(player.spellbook.spells))
                 spell_or_item_to_use = player.spellbook.spells[spellbook_index]
+                # CAN THE SPELL BE CASTED?
+                if game_state == GameStates.SHOW_SPELLBOOK:
+                    # since its spellbook, we know object is spell
+                    if spell_or_item_to_use.spell.mana_cost > player.fighter.mana:
+                        message_log.add_message(
+                            Message('Not enough mana to cast {}'.format(spell_or_item_to_use.name), libtcod.yellow))
+                    else:
+                        # on recoit à la fin "spell_entity" qui est spell_or_item_to_use + .spell et le targeting_mode.
+                        print('INFO : In SHOW SPELLBOOK, spelloritem is ', spell_or_item_to_use)
+                        player_turn_results.extend(
+                            player.spellbook.cast_spell(spell_or_item_to_use, entities=entities, fov_map=fov_map,
+                                                        to_cast=spell_or_item_to_use.spell.to_cast,
+                                                        game_map=game_map))
+                        print('INFO : We cast some spell ')
 
             elif inventory_index is not None and inventory_index < len(player.inventory.items):
                 spell_or_item_to_use = player.inventory.items[inventory_index]
                 print('DEBUG : item at inventory index is : ', spell_or_item_to_use)
+
+                # ARE WE USING AN ITEM?
+                if game_state == GameStates.SHOW_INVENTORY:
+                    print('DEBUG : spell or item to use is : ', spell_or_item_to_use)
+                    player_turn_results.extend(player.inventory.use(spell_or_item_to_use, entities=entities,
+                                                                    fov_map=fov_map))
+
+                # ARE WE DROPING AN ITEM?
+                elif game_state == GameStates.DROP_INVENTORY:
+                    player_turn_results.extend(player.inventory.drop_item(spell_or_item_to_use))
+
             else:
-                print('Inventory index : ', inventory_index)
-                print('spellbook index : ', spellbook_index)
-                print('inventory index len : ', len(player.inventory.items))
-                print('spellbook len ; ', len(player.spellbook.spells))
-                print('WARNING : action required from Spellbook or inventory, case not supported!!')
-                break
-
-            # object : spell or item we want to use
-
-            # CAN THE SPELL BE CASTED?
-            if game_state == GameStates.SHOW_SPELLBOOK:
-                # since its spellbook, we know object is spell
-                if spell_or_item_to_use.spell.mana_cost > player.fighter.mana:
-                    message_log.add_message(
-                        Message('Not enough mana to cast {}'.format(spell_or_item_to_use.name), libtcod.yellow))
-                else:
-                    # on recoit à la fin "spell_entity" qui est spell_or_item_to_use + .spell et le targeting_mode.
-                    print('INFO : In SHOW SPELLBOOK, spelloritem is ', spell_or_item_to_use)
-                    player_turn_results.extend(
-                        player.spellbook.cast_spell(spell_or_item_to_use, entities=entities, fov_map=fov_map,
-                                                    to_cast=spell_or_item_to_use.spell.to_cast,
-                                                    game_map=game_map))
-                    print('INFO : We cast some spell ')
-
-            # ARE WE USING AN ITEM?
-            if game_state == GameStates.SHOW_INVENTORY:
-                print('DEBUG : spell or item to use is : ', spell_or_item_to_use)
-                player_turn_results.extend(player.inventory.use(spell_or_item_to_use, entities=entities, fov_map=fov_map))
-
-            # ARE WE DROPING AN ITEM?
-            elif game_state == GameStates.DROP_INVENTORY:
-                player_turn_results.extend(player.inventory.drop_item(spell_or_item_to_use))
+                # inventory / spellbook index out of range of the player inventory / spellbook.
+                print('WARNING : Choose out of range of the spellbook / inventory.')
 
         # WE HAVE NOW AN item_or_spell_targeting, through the player_turn results of spell.use / item.use
         if game_state == GameStates.SPELL_TARGETING:
@@ -205,7 +202,6 @@ def play_game(player, entities, game_map, message_log, game_state, con, panel, c
                                                            entities, left_click, right_click)
 
             # objectif a lancer.
-
             # spell_use_results = spell_targeting_resolution(item_or_spell_targeting, target_mode, player, game_map, fov_map,
             #                                               entities, action, left_click, right_click)
 

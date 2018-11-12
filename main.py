@@ -5,7 +5,7 @@ from imput_handlers import handle_main_menu, handle_score_bill_menu, \
 
 from loader_functions.initialize_new_game import get_game_variables
 from loader_functions.data_loaders import load_game, get_saved_games
-from loader_functions.initialize_new_game import get_constants
+from loader_functions.initialize_new_game import get_constants, create_player
 
 from menus import main_menu, message_box, score_bill_menu, character_creation_menu, menu
 
@@ -98,6 +98,10 @@ def main_screen(constants):
         elif show_load_menu:
             number_of_games = get_saved_games()
             header = 'Choose your save :'
+            '''
+            menu(con, header, number_of_games, int(constants['screen_width'] / 2), constants['screen_width'],
+                 constants['screen_height'])
+            '''
             menu(con, header, number_of_games, int(constants['screen_width'] / 2), constants['screen_width'],
                  constants['screen_height'])
 
@@ -150,7 +154,8 @@ def main_screen(constants):
                     character_name = 'Player'
 
                 show_creation_menu = False
-                player, entities, game_map, message_log, game_state = get_game_variables(constants)
+                player = create_player("warrior")
+                entities, game_map, message_log, game_state = get_game_variables(constants, player)
                 player.name = character_name
                 game_state = GameStates.PLAYERS_TURN
 

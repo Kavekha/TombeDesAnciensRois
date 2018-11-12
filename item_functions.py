@@ -4,9 +4,9 @@ from game_messages import Message
 from components.ai import ModifiedMindMonster, BrainStates
 
 
-def gain_mana(caster, spell_entity, **kwargs):
+def gain_mana(caster, item_entity, **kwargs):
     entity = caster
-    amount = spell_entity.item.power
+    amount = item_entity.item.power
 
     results = []
 
@@ -15,15 +15,15 @@ def gain_mana(caster, spell_entity, **kwargs):
                                                                         libtcod.yellow)})
     else:
         entity.fighter.gain_mana(amount)
-        results.append({'consumed': spell_entity, 'message': Message('You feel more connected to the energies of the world '
+        results.append({'consumed': item_entity, 'message': Message('You feel more connected to the energies of the world '
                                                              'than ever!', libtcod.green)})
 
     return results
 
 
-def heal(caster, spell_entity, **kwargs):
+def heal(caster, item_entity, **kwargs):
     entity = caster
-    amount = spell_entity.item.power
+    amount = item_entity.item.power
 
 
     results = []
@@ -33,22 +33,22 @@ def heal(caster, spell_entity, **kwargs):
                                                                         libtcod.yellow)})
     else:
         entity.fighter.heal(amount)
-        results.append({'consumed': spell_entity, 'message': Message('Your wounds start to feel better!', libtcod.green)})
+        results.append({'consumed': item_entity, 'message': Message('Your wounds start to feel better!', libtcod.green)})
 
     return results
 
 
-def cast_lightning(caster, spell_entity, **kwargs):
+def cast_lightning(caster, item_entity, **kwargs):
     caster = caster
-    damage = spell_entity.item.power
+    damage = item_entity.item.power
     game_map = kwargs.get('game_map')
-    damage_type = spell_entity.item.damage_type
+    damage_type = item_entity.item.damage_type
     target_list = kwargs.get('target_entity')
 
     results = []
 
     for target in target_list:
-        results.append({'consumed': spell_entity, 'target': target, 'message': Message(
+        results.append({'consumed': item_entity, 'target': target, 'message': Message(
                         'A lightning bolt strikes the {} with a loud thunder!'.format(target.name), libtcod.orange)})
         results.extend(target.fighter.take_damage(damage, caster, game_map, damage_type))
         break
@@ -56,10 +56,10 @@ def cast_lightning(caster, spell_entity, **kwargs):
     return results
 
 
-def cast_fireball(caster, spell_entity, **kwargs):
+def cast_fireball(caster, item_entity, **kwargs):
     caster = caster
-    damage = spell_entity.item.power
-    radius = spell_entity.item.radius
+    damage = item_entity.item.power
+    radius = item_entity.item.radius
     game_map = kwargs.get('game_map')
     damage_type = kwargs.get('damage_type')
 
@@ -67,7 +67,7 @@ def cast_fireball(caster, spell_entity, **kwargs):
 
     results = []
 
-    results.append({'consumed': spell_entity, 'message': Message('The fireball explodes, burning everything within {} tiles!'.
+    results.append({'consumed': item_entity, 'message': Message('The fireball explodes, burning everything within {} tiles!'.
                                                          format(radius), libtcod.orange)})
 
     if target_list:

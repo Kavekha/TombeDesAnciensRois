@@ -6,10 +6,14 @@ import os
 
 def create_score_bill(player, dungeon_level, killer, dungeon_name):
 
+    print('DEBUG : Enter create score bill function')
+
     if not os.path.isfile('scores'):
         print('DEBUG : no score file. Creating one.')
         with open('scores.txt', 'w') as score_file:
             score_file.write('Player name, Level, Status, Floor, Date, Dungeon \n')
+    else:
+        remove_older_scores('scores')
 
     player_name = str(player.name)
     player_level = str(player.level.current_level)
@@ -22,8 +26,6 @@ def create_score_bill(player, dungeon_level, killer, dungeon_name):
         status = killer # Victory
     else:
         status = str('Killed by ' + killer.owner.name)
-
-    remove_older_scores('scores')
 
     with open('scores', 'a') as score_file:
         score_file.write(player_name + ',' + player_level + ',' + status + ',' + dungeon_level + ',' + date

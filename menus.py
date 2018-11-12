@@ -33,7 +33,7 @@ def menu(con, header, options, width, screen_width, screen_height):
 
 
 def spellbook_menu(con, header, player, spellbook, spellbook_width, screen_width, screen_height):
-    if len(spellbook.spells) == 0:
+    if len(spellbook.spells) < 0:
         options = ['No spell in your spellbook.']
     else:
         options = []
